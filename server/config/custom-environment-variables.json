@@ -1,0 +1,12 @@
+﻿{
+  "port": "PORT",
+  "jwt": { "secret": "JWT_SECRET" },
+  "redis": { "url": "REDIS_URL" },
+  "mail": { "smtp": { "host": "MAIL_HOST", "port": "MAIL_PORT", "secure": "MAIL_SECURE", "user": "MAIL_USER", "pass": "MAIL_PASS" }, "from": "MAIL_FROM" },
+  "client": { "url": "PORTAL_URL" },
+  "oauth": {
+    "callbackBase": "API_BASE_URL",
+    "google": { "clientId": "GOOGLE_CLIENT_ID", "clientSecret": "GOOGLE_CLIENT_SECRET" },
+    "facebook": { "clientId": "FACEBOOK_CLIENT_ID", "clientSecret": "FACEBOOK_CLIENT_SECRET" }
+  }
+}

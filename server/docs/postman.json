@@ -1,0 +1,9 @@
+﻿{
+  "info": { "name": "HealthCare API", "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json" },
+  "item": [
+    { "name": "Health", "request": { "method": "GET", "url": "http://localhost:3000/api/v1/health" } },
+    { "name": "Auth Login", "request": { "method": "POST", "header": [{"key":"Content-Type","value":"application/json"}], "url": "http://localhost:3000/api/v1/auth/login", "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"admin123\"\n}" } } },
+    { "name": "Doctors List", "request": { "method": "GET", "url": "http://localhost:3000/api/v1/doctors" } },
+    { "name": "Create Appointment (Public)", "request": { "method": "POST", "header": [{"key":"Content-Type","value":"application/json"}], "url": "http://localhost:3000/api/v1/appointments", "body": { "mode": "raw", "raw": "{\n  \"doctor_id\": 1,\n  \"start_time\": \"2025-01-01T09:00:00Z\",\n  \"notes\": \"Checkup\",\n  \"patient\": { \"first_name\": \"John\", \"last_name\": \"Doe\", \"contact_no\": \"0123456789\", \"email\": \"john@example.com\" }\n}" } } }
+  ]
+}

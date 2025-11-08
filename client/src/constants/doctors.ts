@@ -1,0 +1,130 @@
+export interface Doctor {
+  id: string;
+  name: string;
+  specialty: string;
+  experience: string;
+  hospital: string;
+  district: string;
+  rating: number;
+  reviews: number;
+  avatar: string;
+  achievements: string[];
+  departmentId: string;
+  languages?: string[];
+  focusAreas?: string[];
+}
+
+export const DOCTORS: Doctor[] = [
+  {
+    id: "1",
+    name: "BS. Nguyễn Văn An",
+    specialty: "Nội Khoa",
+    experience: "15 năm kinh nghiệm",
+    hospital: "Bệnh viện Bạch Mai",
+    district: "Đống Đa",
+    rating: 4.8,
+    reviews: 142,
+    avatar: "",
+    achievements: ["Bác sĩ giỏi 2023", "Chứng chỉ hành nghề"],
+    departmentId: "cardio",
+    languages: ["Tiếng Việt", "English"],
+    focusAreas: ["Đặt stent", "Chẩn đoán hình ảnh tim"],
+  },
+  {
+    id: "2",
+    name: "BS. Trần Thị Bình",
+    specialty: "Sản - Nhi",
+    experience: "12 năm kinh nghiệm",
+    hospital: "Bệnh viện Phụ Sản Hà Nội",
+    district: "Ba Đình",
+    rating: 4.9,
+    reviews: 198,
+    avatar: "",
+    achievements: ["Thạc sĩ Y khoa", "Chuyên gia sản phụ khoa"],
+    departmentId: "pediatrics",
+    languages: ["Tiếng Việt"],
+    focusAreas: ["Tiêm chủng", "Khám tổng quát trẻ em"],
+  },
+  {
+    id: "3",
+    name: "BS. Lê Hoàng Cường",
+    specialty: "Tâm thần",
+    experience: "10 năm kinh nghiệm",
+    hospital: "Bệnh viện E",
+    district: "Hai Bà Trưng",
+    rating: 4.7,
+    reviews: 89,
+    avatar: "",
+    achievements: ["Chuyên gia tâm lý", "Liệu pháp CBT"],
+    departmentId: "neuro",
+    focusAreas: ["Tư vấn tâm lý", "CBT"],
+  },
+  {
+    id: "4",
+    name: "BS. Phạm Thị Dung",
+    specialty: "Cơ xương khớp",
+    experience: "18 năm kinh nghiệm",
+    hospital: "Bệnh viện 108",
+    district: "Thanh Xuân",
+    rating: 4.9,
+    reviews: 256,
+    avatar: "",
+    achievements: ["Giáo sư", "Bác sĩ chuyên khoa II"],
+    departmentId: "ortho",
+    focusAreas: ["Phẫu thuật nội soi", "Phục hồi vận động"],
+  },
+  {
+    id: "5",
+    name: "BS. Hoàng Minh Tuấn",
+    specialty: "Ngoại Khoa",
+    experience: "14 năm kinh nghiệm",
+    hospital: "Bệnh viện Việt Đức",
+    district: "Hoàn Kiếm",
+    rating: 4.8,
+    reviews: 167,
+    avatar: "",
+    achievements: ["Phẫu thuật viên giỏi", "Chứng chỉ quốc tế"],
+    departmentId: "ortho",
+    languages: ["Tiếng Việt", "English"],
+  },
+  {
+    id: "6",
+    name: "BS. Đỗ Thu Hương",
+    specialty: "Y học cổ truyền",
+    experience: "20 năm kinh nghiệm",
+    hospital: "Bệnh viện Y học Cổ truyền",
+    district: "Cầu Giấy",
+    rating: 4.9,
+    reviews: 203,
+    avatar: "",
+    achievements: ["Bác sĩ nhân dân", "Chuyên gia châm cứu"],
+    departmentId: "derma",
+    focusAreas: ["Y học cổ truyền", "Điều trị da liễu"],
+  },
+  {
+    id: "7",
+    name: "BS. Vũ Thành Đạt",
+    specialty: "Dinh dưỡng",
+    experience: "8 năm kinh nghiệm",
+    hospital: "Viện Dinh dưỡng Quốc gia",
+    district: "Tây Hồ",
+    rating: 4.6,
+    reviews: 94,
+    avatar: "",
+    achievements: ["Chuyên gia dinh dưỡng", "Tư vấn giảm cân"],
+    departmentId: "endocrine",
+  },
+  {
+    id: "8",
+    name: "BS. Mai Lan Anh",
+    specialty: "Cận lâm sàng – hỗ trợ",
+    experience: "11 năm kinh nghiệm",
+    hospital: "Bệnh viện Thanh Nhàn",
+    district: "Long Biến",
+    rating: 4.7,
+    reviews: 128,
+    avatar: "",
+    achievements: ["Chuyên gia xét nghiệm", "Y học chẩn đoán"],
+    departmentId: "obgyn",
+  },
+];

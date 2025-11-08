@@ -1,0 +1,18 @@
+﻿{
+  "port": 3000,
+  "cors": { "origin": "*", "credentials": true },
+  "jwt": {
+    "secret": "changeme",
+    "issuer": "healthcare.api",
+    "audience": "healthcare.client",
+    "expiresIn": { "access": "8h", "refresh": "7d" }
+  },
+  "redis": { "url": "redis://127.0.0.1:6379" },
+  "mail": { "transport": "console", "from": "no-reply@healthcare.local", "smtp": { "host": "", "port": 587, "secure": false, "user": "", "pass": "" } },
+  "client": { "url": "http://localhost:5173" },
+  "oauth": {
+    "callbackBase": "http://localhost:3000",
+    "google": { "clientId": "", "clientSecret": "" },
+    "facebook": { "clientId": "", "clientSecret": "" }
+  }
+}

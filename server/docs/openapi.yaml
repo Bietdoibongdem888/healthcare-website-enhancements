@@ -1,0 +1,749 @@
+openapi: 3.0.3
+info:
+  title: HealthCare+ API
+  description: Core API surface for the HealthCare+ SERN stack (converted from Pan inventory data).
+  version: 0.2.0
+servers:
+  - url: http://localhost:3000
+    description: Local development
+tags:
+  - name: Auth
+  - name: Doctors
+  - name: Availability
+  - name: Departments
+  - name: Appointments
+  - name: Support
+paths:
+  /api/v1/departments:
+    get:
+      summary: List departments
+      tags: [Departments]
+      responses:
+        '200':
+          description: List of departments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Department'
+    post:
+      summary: Create department
+      tags: [Departments]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DepartmentInput'
+      responses:
+        '201':
+          description: Created department
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Department'
+  /api/v1/departments/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: Get department detail
+      tags: [Departments]
+      responses:
+        '200':
+          description: Department info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Department'
+    put:
+      summary: Update department
+      tags: [Departments]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DepartmentInput'
+      responses:
+        '200':
+          description: Updated department
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Department'
+  /api/v1/auth/google:
+    get:
+      summary: Start Google OAuth2 flow
+      tags: [Auth]
+      responses:
+        '302':
+          description: Redirects user to Google for authentication (requires server configuration)
+        '503':
+          description: Provider not configured
+  /api/v1/auth/facebook:
+    get:
+      summary: Start Facebook OAuth2 flow
+      tags: [Auth]
+      responses:
+        '302':
+          description: Redirects user to Facebook for authentication (requires server configuration)
+        '503':
+          description: Provider not configured
+  /api/v1/auth/oauth/failure:
+    get:
+      summary: OAuth failure helper
+      tags: [Auth]
+      responses:
+        '200':
+          description: Returns helper page that closes the popup and notifies client
+          content:
+            text/html:
+              schema:
+                type: string
+  /api/v1/auth/forgot-password/email-otp:
+    post:
+      summary: Gửi OTP đặt lại mật khẩu qua email
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+              required: [email]
+      responses:
+        '200':
+          description: OTP sent (always generic response)
+  /api/v1/auth/reset-password/email-otp:
+    post:
+      summary: Đặt lại mật khẩu bằng OTP email
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                otp:
+                  type: string
+                new_password:
+                  type: string
+              required: [email, otp, new_password]
+      responses:
+        '200':
+          description: Password reset success
+  /api/v1/auth/forgot-password/phone:
+    post:
+      summary: Gửi OTP qua số điện thoại
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone:
+                  type: string
+              required: [phone]
+      responses:
+        '200':
+          description: OTP sent (logged to console in demo mode)
+  /api/v1/auth/reset-password/phone:
+    post:
+      summary: Đặt lại mật khẩu bằng OTP số điện thoại
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone:
+                  type: string
+                otp:
+                  type: string
+                new_password:
+                  type: string
+              required: [phone, otp, new_password]
+      responses:
+        '200':
+          description: Password reset success
+  /api/v1/health:
+    get:
+      summary: Health check
+      tags: [Misc]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+  /api/v1/support/sessions:
+    post:
+      summary: Start a support or AI assistant session
+      tags: [Support]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupportSessionRequest'
+      responses:
+        '201':
+          description: Session created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  session:
+                    $ref: '#/components/schemas/SupportSession'
+                  messages:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SupportMessage'
+  /api/v1/support/sessions/{sessionId}:
+    parameters:
+      - in: path
+        name: sessionId
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: Get a support session with messages
+      tags: [Support]
+      responses:
+        '200':
+          description: Current session state
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  session:
+                    $ref: '#/components/schemas/SupportSession'
+                  messages:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SupportMessage'
+        '404':
+          description: Session not found
+  /api/v1/support/sessions/{sessionId}/messages:
+    parameters:
+      - in: path
+        name: sessionId
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: List messages in a support session
+      tags: [Support]
+      responses:
+        '200':
+          description: Ordered messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SupportMessage'
+    post:
+      summary: Append a patient message (AI will auto-reply if applicable)
+      tags: [Support]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupportMessageRequest'
+      responses:
+        '200':
+          description: Messages appended (includes assistant acknowledgement)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  session:
+                    $ref: '#/components/schemas/SupportSession'
+                  messages:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SupportMessage'
+  /api/v1/doctors:
+    get:
+      summary: List doctors
+      tags: [Doctors]
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+        - in: query
+          name: specialty
+          schema:
+            type: string
+        - in: query
+          name: district
+          schema:
+            type: string
+        - in: query
+          name: department_id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of doctors
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Doctor'
+    post:
+      summary: Create doctor
+      tags: [Doctors]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DoctorInput'
+      responses:
+        '201':
+          description: Created doctor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Doctor'
+  /api/v1/doctors/{doctorId}/availability:
+    parameters:
+      - in: path
+        name: doctorId
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: List availability slots for a doctor
+      tags: [Availability]
+      parameters:
+        - in: query
+          name: from
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: to
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [available, blocked]
+      responses:
+        '200':
+          description: Slots for doctor
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Availability'
+    post:
+      summary: Create availability slot
+      tags: [Availability]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AvailabilityInput'
+      responses:
+        '201':
+          description: Created slot
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Availability'
+  /api/v1/doctors/{doctorId}/availability/{availabilityId}:
+    delete:
+      summary: Delete availability slot
+      tags: [Availability]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: doctorId
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: availabilityId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Deleted slot
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Availability'
+  /api/v1/appointments:
+    get:
+      summary: List appointments
+      tags: [Appointments]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: doctor_id
+          schema:
+            type: integer
+        - in: query
+          name: patient_id
+          schema:
+            type: integer
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [scheduled, completed, canceled]
+      responses:
+        '200':
+          description: Appointments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Appointment'
+    post:
+      summary: Book appointment
+      tags: [Appointments]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentInput'
+      responses:
+        '201':
+          description: Created appointment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+  /api/v1/appointments/stats/summary:
+    get:
+      summary: Appointment summary stats
+      tags: [Appointments]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: window
+          schema:
+            type: integer
+            description: Number of days for trend window (default 14)
+      responses:
+        '200':
+          description: Summary data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentSummary'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Doctor:
+      type: object
+      properties:
+        doctor_id:
+          type: integer
+        first_name:
+          type: string
+        last_name:
+          type: string
+        specialty:
+          type: string
+        hospital:
+          type: string
+        district:
+          type: string
+        department_id:
+          type: integer
+          nullable: true
+        department_name:
+          type: string
+          nullable: true
+        rating:
+          type: number
+        reviews:
+          type: integer
+    DoctorInput:
+      type: object
+      required: [first_name, last_name, specialty]
+      properties:
+        first_name:
+          type: string
+        last_name:
+          type: string
+        specialty:
+          type: string
+        hospital:
+          type: string
+        district:
+          type: string
+        department_id:
+          type: integer
+          nullable: true
+    Availability:
+      type: object
+      properties:
+        availability_id:
+          type: integer
+        doctor_id:
+          type: integer
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+        max_patients:
+          type: integer
+        booked_patients:
+          type: integer
+        status:
+          type: string
+          enum: [available, blocked]
+        notes:
+          type: string
+    AvailabilityInput:
+      type: object
+      required: [start_time, end_time]
+      properties:
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+        max_patients:
+          type: integer
+        notes:
+          type: string
+    Appointment:
+      type: object
+      properties:
+        appointment_id:
+          type: integer
+        patient_id:
+          type: integer
+        doctor_id:
+          type: integer
+        availability_id:
+          type: integer
+          nullable: true
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+        status:
+          type: string
+        notes:
+          type: string
+    AppointmentInput:
+      type: object
+      required: [doctor_id, start_time]
+      properties:
+        doctor_id:
+          type: integer
+        patient_id:
+          type: integer
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+        notes:
+          type: string
+    AppointmentSummary:
+      type: object
+      properties:
+        by_status:
+          type: array
+          items:
+            type: object
+            properties:
+              status:
+                type: string
+              total:
+                type: integer
+        top_doctors:
+          type: array
+          items:
+            type: object
+            properties:
+              doctor_id:
+                type: integer
+              name:
+                type: string
+              upcoming:
+                type: integer
+        daily_trend:
+          type: array
+          items:
+            type: object
+            properties:
+              day:
+                type: string
+                format: date
+              total:
+                type: integer
+        utilization:
+          type: array
+          items:
+            type: object
+            properties:
+              availability_id:
+                type: integer
+              doctor_id:
+                type: integer
+              start_time:
+                type: string
+                format: date-time
+              end_time:
+                type: string
+                format: date-time
+              max_patients:
+                type: integer
+              booked_patients:
+                type: integer
+              utilization:
+                type: number
+    Department:
+      type: object
+      properties:
+        department_id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+    DepartmentInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+    SupportSession:
+      type: object
+      properties:
+        session_id:
+          type: integer
+        channel:
+          type: string
+          enum: [hotline, ai]
+        patient_id:
+          type: integer
+          nullable: true
+        contact_name:
+          type: string
+          nullable: true
+        contact_email:
+          type: string
+          nullable: true
+        contact_phone:
+          type: string
+          nullable: true
+        status:
+          type: string
+        last_topic:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    SupportMessage:
+      type: object
+      properties:
+        message_id:
+          type: integer
+        session_id:
+          type: integer
+        author:
+          type: string
+          enum: [patient, agent, assistant]
+        content:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    SupportSessionRequest:
+      type: object
+      properties:
+        channel:
+          type: string
+          enum: [hotline, ai]
+        patient_id:
+          type: integer
+        contact_name:
+          type: string
+        contact_email:
+          type: string
+          format: email
+        contact_phone:
+          type: string
+        topic:
+          type: string
+        initial_message:
+          type: string
+    SupportMessageRequest:
+      type: object
+      required: [content]
+      properties:
+        content:
+          type: string
