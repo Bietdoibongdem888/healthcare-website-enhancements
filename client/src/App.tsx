@@ -6,6 +6,7 @@ import { LoginPage } from "./components/LoginPage";
 import { ProfilePage } from "./components/ProfilePage";
 import { DoctorsPage } from "./components/DoctorsPage";
 import { BookingPage } from "./components/BookingPage";
+import { BookingSuccess } from "./components/BookingSuccess";
 import { MedicalRecordsPage } from "./components/MedicalRecordsPage";
 import { TreatmentsPage } from "./components/TreatmentsPage";
 import { TechnologyPage } from "./components/TechnologyPage";
@@ -43,6 +44,8 @@ export default function App() {
         return <DoctorsPage onNavigate={handleNavigate} />;
       case "booking":
         return <BookingPage onNavigate={handleNavigate} />;
+      case "booking-success":
+        return <BookingSuccess onNavigate={handleNavigate} />;
       case "medical-records":
         return <MedicalRecordsPage onNavigate={handleNavigate} />;
       case "treatments":
