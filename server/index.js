@@ -16,6 +16,7 @@ const authRoutes = require("./src/routes/auth.route");
 const doctorRoutes = require("./src/routes/doctor.route");
 const departmentRoutes = require("./src/routes/department.route");
 const doctorAvailabilityRoutes = require("./src/routes/doctor_availability.route");
+const availabilityRoutes = require("./src/routes/availability.route");
 const patientRoutes = require("./src/routes/patient.route");
 const appointmentRoutes = require("./src/routes/appointment.route");
 const medicalRecordRoutes = require('./src/routes/medical_record.route');
@@ -25,6 +26,7 @@ const supportRoutes = require('./src/routes/support.route');
 const { error } = require("./src/middleware");
 const rateLimit = require('./src/middleware/authRateLimit');
 const passport = require('./src/providers/passport');
+const { sequelize } = require('./src/database');
 
 
 const app = express();
@@ -51,6 +53,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/departments', departmentRoutes);
 app.use('/api/v1/doctors', doctorRoutes);
 app.use('/api/v1/doctors/:doctorId/availability', doctorAvailabilityRoutes);
+app.use('/api/v1/availability', availabilityRoutes);
 app.use('/api/v1/patients', patientRoutes);
 app.use('/api/v1/appointments', appointmentRoutes);
 app.use('/api/v1/records', medicalRecordRoutes);
@@ -70,5 +73,15 @@ if (fs.existsSync(clientDist)) {
 
 app.use(error);
 
-const PORT = process.env.PORT || config.get('port') || 3000;
-app.listen(PORT, () => console.log(`Healthcare server listening on port ${PORT}`));
+async function bootstrap() {
+  try {
+    await sequelize.authenticate();
+    const PORT = process.env.PORT || config.get('port') || 3000;
+    app.listen(PORT, () => console.log(`Healthcare server listening on port ${PORT}`));
+  } catch (err) {
+    console.error('Unable to connect to database', err);
+    process.exit(1);
+  }
+}
+
+bootstrap();

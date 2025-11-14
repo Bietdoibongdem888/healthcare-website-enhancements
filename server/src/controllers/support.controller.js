@@ -14,6 +14,7 @@ const createSchema = Joi.object({
 
 const messageSchema = Joi.object({
   content: Joi.string().min(2).max(2000).required(),
+  patient_id: Joi.number().integer().positive().allow(null),
 });
 
 function normalize(text = '') {
@@ -45,6 +46,7 @@ async function createSession(req, res, next) {
       const msg = await Support.appendMessage(session.session_id, {
         author: 'patient',
         content: value.initial_message.trim(),
+        patient_id: value.patient_id || req.user?.patient_id || null,
       });
       messages.push(msg);
     }
@@ -131,9 +133,11 @@ async function sendMessage(req, res, next) {
     if (!session) return res.status(404).json({ message: 'Session not found' });
 
     const messages = [];
+    const patientMessageId = value.patient_id || req.user?.patient_id || session.patient_id || null;
     const userMessage = await Support.appendMessage(session.session_id, {
       author: 'patient',
       content: value.content.trim(),
+      patient_id: patientMessageId,
     });
     messages.push(userMessage);
 
@@ -163,9 +167,20 @@ async function sendMessage(req, res, next) {
   }
 }
 
+async function deleteSession(req, res, next) {
+  try {
+    const removed = await Support.deleteSession(req.params.sessionId);
+    if (!removed) return res.status(404).json({ message: 'Session not found' });
+    res.json({ message: 'Session deleted', session: removed });
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   createSession,
   getSession,
   listMessages,
   sendMessage,
+  deleteSession,
 };

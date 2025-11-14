@@ -42,4 +42,14 @@ async function update(req, res) {
   } catch (err) { handleError(res, err); }
 }
 
-module.exports = { list, get, create, update };
+async function remove(req, res) {
+  try {
+    const deleted = await Doctor.remove(req.params.id || req.params.doctorId);
+    if (!deleted) return res.status(404).json({ message: 'Doctor not found' });
+    res.json({ message: 'Doctor deleted', doctor: deleted });
+  } catch (err) {
+    handleError(res, err);
+  }
+}
+
+module.exports = { list, get, create, update, remove };

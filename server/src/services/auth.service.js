@@ -1,7 +1,7 @@
 const { v4: uuid } = require('uuid');
-const db = require('../providers/db');
 const { hashPassword } = require('../providers/hash');
 const { TokenPair } = require('../providers/jwt');
+const { Staff, Patient, sequelize } = require('../database');
 
 function mapStaffRow(row) {
   if (!row) return null;
@@ -13,43 +13,47 @@ function mapStaffRow(row) {
     email: row.email,
     role: row.role,
     patient_id: row.patient_id,
+    doctor_id: row.doctor_id ?? null,
   };
 }
 
 async function findStaffByEmail(email) {
-  const [rows] = await db.query(
-    'SELECT staff_id, first_name, last_name, phone, email, role, is_active, patient_id FROM staff WHERE email = ?',
-    [email],
-  );
-  return mapStaffRow(rows[0]);
+  const staff = await Staff.findOne({ where: { email } });
+  return mapStaffRow(staff);
 }
 
-async function createStaffWithPatient({ first_name, last_name, email, phone = null, role = 'user' }) {
-  const password = await hashPassword(uuid());
-  const [pIns] = await db.query(
-    'INSERT INTO patient (first_name, last_name, contact_no, email) VALUES (?,?,?,?)',
-    [first_name, last_name, phone, email],
-  );
-  const patient_id = pIns.insertId;
-  const [sIns] = await db.query(
-    'INSERT INTO staff (first_name,last_name,phone,email,password,role,is_active,patient_id) VALUES (?,?,?,?,?,?,1,?)',
-    [first_name, last_name, phone, email, password, role, patient_id],
-  );
-  return {
-    id: sIns.insertId,
-    first_name,
-    last_name,
-    phone,
-    email,
-    role,
-    patient_id,
-  };
+async function createStaffWithPatient({ first_name, last_name, email, phone = null, role = 'patient' }) {
+  return sequelize.transaction(async (transaction) => {
+    const password = await hashPassword(uuid());
+    const patient = await Patient.create(
+      {
+        first_name,
+        last_name,
+        contact_no: phone,
+        email,
+      },
+      { transaction }
+    );
+    const staff = await Staff.create(
+      {
+        first_name,
+        last_name,
+        phone,
+        email,
+        password,
+        role,
+        patient_id: patient.patient_id,
+      },
+      { transaction }
+    );
+    return mapStaffRow(staff);
+  });
 }
 
 async function ensureSocialUser({ first_name, last_name, email, phone = null }) {
   const existing = await findStaffByEmail(email);
   if (existing) return existing;
-  return createStaffWithPatient({ first_name, last_name, email, phone, role: 'user' });
+  return createStaffWithPatient({ first_name, last_name, email, phone, role: 'patient' });
 }
 
 async function issueTokenForStaff(staff) {
@@ -61,6 +65,7 @@ async function issueTokenForStaff(staff) {
     email: staff.email,
     phone: staff.phone || null,
     patient_id: staff.patient_id,
+    doctor_id: staff.doctor_id ?? null,
   });
   return {
     access: pair.access,
@@ -73,4 +78,5 @@ async function issueTokenForStaff(staff) {
 module.exports = {
   ensureSocialUser,
   issueTokenForStaff,
+  findStaffByEmail,
 };

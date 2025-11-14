@@ -18,6 +18,13 @@ const rescheduleSchema = Joi.object({
   end_time: Joi.date().iso().greater(Joi.ref('start_time')).optional(),
 }).options({ abortEarly: false });
 
+const updateSchema = Joi.object({
+  status: Joi.string().valid('pending', 'confirmed', 'completed', 'cancelled'),
+  notes: Joi.string().allow('', null),
+})
+  .min(1)
+  .options({ abortEarly: false });
+
 router.get('/', auth, ctrl.list);
 router.get('/mine', auth, ctrl.listMine);
 router.get('/stats/summary', auth, permit('admin'), ctrl.summary);
@@ -26,6 +33,8 @@ router.get('/:id', auth, ctrl.getById);
 router.post('/', validate(createSchema), ctrl.create); // public booking allowed
 router.post('/:id/cancel', auth, ctrl.cancel);
 router.post('/:id/reschedule', auth, validate(rescheduleSchema), ctrl.reschedule);
+router.patch('/:id', auth, permit('admin', 'doctor'), validate(updateSchema), ctrl.updateFields);
+router.delete('/:id', auth, permit('admin'), ctrl.remove);
 
 module.exports = router;
 

@@ -46,9 +46,21 @@ async function update(req, res) {
   }
 }
 
+async function remove(req, res) {
+  try {
+    const dept = await Department.remove(req.params.id);
+    if (!dept) return res.status(404).json({ message: 'Department not found' });
+    res.json({ message: 'Department deleted', department: dept });
+  } catch (err) {
+    handleError(res, err);
+  }
+}
+
 module.exports = {
   list,
   get,
   create,
   update,
+  remove,
 };
+

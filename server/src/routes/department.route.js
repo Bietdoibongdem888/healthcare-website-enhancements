@@ -7,5 +7,6 @@ router.get('/', ctrl.list);
 router.get('/:id', ctrl.get);
 router.post('/', auth, permit('admin'), ctrl.create);
 router.put('/:id', auth, permit('admin'), ctrl.update);
+router.delete('/:id', auth, permit('admin'), ctrl.remove);
 
 module.exports = router;

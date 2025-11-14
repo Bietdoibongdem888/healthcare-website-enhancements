@@ -8,6 +8,16 @@
     "expiresIn": { "access": "8h", "refresh": "7d" }
   },
   "redis": { "url": "redis://127.0.0.1:6379" },
+  "database": {
+    "dialect": "mysql",
+    "host": "localhost",
+    "port": 3307,
+    "name": "healthcare_db",
+    "user": "root",
+    "password": "123456",
+    "logging": false,
+    "timezone": "+07:00"
+  },
   "mail": { "transport": "console", "from": "no-reply@healthcare.local", "smtp": { "host": "", "port": 587, "secure": false, "user": "", "pass": "" } },
   "client": { "url": "http://localhost:5173" },
   "oauth": {

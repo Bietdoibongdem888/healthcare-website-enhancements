@@ -1,6 +1,40 @@
-﻿const db = require('../providers/db');
+const { Op, fn, col } = require('sequelize');
+const { Doctor } = require('../database');
 
-async function specialties(req,res,next){ try { const [rows]=await db.query("SELECT DISTINCT specialty FROM doctor WHERE specialty IS NOT NULL AND specialty <> '' ORDER BY specialty"); res.json(rows.map(r=>r.specialty)); } catch(e){ next(e); } }
-async function districts(req,res,next){ try { const [rows]=await db.query("SELECT DISTINCT district FROM doctor WHERE district IS NOT NULL AND district <> '' ORDER BY district"); res.json(rows.map(r=>r.district)); } catch(e){ next(e); } }
+async function specialties(req, res, next) {
+  try {
+    const rows = await Doctor.findAll({
+      attributes: [[fn('DISTINCT', col('specialty')), 'specialty']],
+      where: {
+        specialty: {
+          [Op.and]: [{ [Op.ne]: null }, { [Op.ne]: '' }],
+        },
+      },
+      order: [['specialty', 'ASC']],
+      raw: true,
+    });
+    res.json(rows.map((row) => row.specialty));
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function districts(req, res, next) {
+  try {
+    const rows = await Doctor.findAll({
+      attributes: [[fn('DISTINCT', col('district')), 'district']],
+      where: {
+        district: {
+          [Op.and]: [{ [Op.ne]: null }, { [Op.ne]: '' }],
+        },
+      },
+      order: [['district', 'ASC']],
+      raw: true,
+    });
+    res.json(rows.map((row) => row.district));
+  } catch (err) {
+    next(err);
+  }
+}
 
 module.exports = { specialties, districts };

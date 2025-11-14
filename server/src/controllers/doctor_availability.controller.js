@@ -53,8 +53,27 @@ async function remove(req, res, next) {
   }
 }
 
+async function update(req, res, next) {
+  try {
+    const availabilityId = Number(req.params.availabilityId || req.params.id);
+    if (!availabilityId) {
+      const err = new Error('Invalid availability id');
+      err.status = 400;
+      throw err;
+    }
+    const slot = await Availability.update(availabilityId, req.body || {});
+    if (!slot) {
+      return res.status(404).json({ message: 'Availability not found' });
+    }
+    res.json(slot);
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   list,
   create,
   remove,
+  update,
 };

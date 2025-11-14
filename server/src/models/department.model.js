@@ -1,53 +1,61 @@
 const Joi = require('joi');
-const db = require('../providers/db');
+const { Department, Doctor } = require('../database');
+
+const payloadSchema = Joi.object({
+  name: Joi.string().min(2).max(150).required(),
+  description: Joi.string().allow('', null),
+}).options({ abortEarly: false });
+
+function assertValid(error) {
+  if (!error) return;
+  const err = new Error('Validation');
+  err.status = 400;
+  err.details = error.details;
+  throw err;
+}
+
+function toPlain(entity) {
+  return entity ? entity.get({ plain: true }) : null;
+}
 
 async function findAll() {
-  const [rows] = await db.query('SELECT department_id, name, description FROM department ORDER BY name ASC');
-  return rows;
+  const departments = await Department.findAll({ order: [['name', 'ASC']] });
+  return departments.map((dept) => dept.get({ plain: true }));
 }
 
 async function findById(id) {
-  const [rows] = await db.query('SELECT department_id, name, description FROM department WHERE department_id = ?', [id]);
-  return rows[0] || null;
+  const dept = await Department.findByPk(id);
+  return toPlain(dept);
 }
 
 async function create(payload) {
-  const { error, value } = validate(payload);
-  if (error) {
-    const err = new Error('Validation');
-    err.status = 400;
-    err.details = error.details;
-    throw err;
-  }
-  const [res] = await db.query('INSERT INTO department (name, description) VALUES (?, ?)', [value.name, value.description || null]);
-  return { department_id: res.insertId, ...value };
+  const { error, value } = payloadSchema.validate(payload);
+  assertValid(error);
+  const department = await Department.create(value);
+  return toPlain(department);
 }
 
 async function update(id, payload) {
-  const { error, value } = validate(payload);
-  if (error) {
-    const err = new Error('Validation');
-    err.status = 400;
-    err.details = error.details;
-    throw err;
-  }
-  const current = await findById(id);
-  if (!current) return null;
-  await db.query('UPDATE department SET name = ?, description = ? WHERE department_id = ?', [
-    value.name,
-    value.description || null,
-    id,
-  ]);
-  return { department_id: Number(id), ...value };
+  const { error, value } = payloadSchema.validate(payload);
+  assertValid(error);
+  const department = await Department.findByPk(id);
+  if (!department) return null;
+  await department.update(value);
+  return toPlain(department);
 }
 
-function validate(body) {
-  return Joi.object({
-    name: Joi.string().min(2).max(150).required(),
-    description: Joi.string().allow('', null),
-  })
-    .options({ abortEarly: false })
-    .validate(body);
+async function remove(id) {
+  const department = await Department.findByPk(id);
+  if (!department) return null;
+  const doctorCount = await Doctor.count({ where: { department_id: id } });
+  if (doctorCount > 0) {
+    const err = new Error('Department is currently assigned to doctors');
+    err.status = 409;
+    err.details = [{ message: 'Department has doctors assigned', path: ['department_id'] }];
+    throw err;
+  }
+  await department.destroy();
+  return toPlain(department);
 }
 
 module.exports = {
@@ -55,4 +63,5 @@ module.exports = {
   findById,
   create,
   update,
+  remove,
 };

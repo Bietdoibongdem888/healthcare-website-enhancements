@@ -1,278 +1,306 @@
-const db = require('../providers/db');
-const Availability = require('./doctor_availability.model');
+const { Op, fn, col, literal } = require('sequelize');
+const { Appointment, Patient, Doctor, Availability, Department, sequelize } = require('../database');
+const AvailabilityService = require('./doctor_availability.model');
 
-async function ensurePatientId(input) {
-  if (input.patient_id) return input.patient_id;
-  if (input.patient && (input.patient.first_name || input.patient.last_name || input.patient.email)) {
-    const p = input.patient;
-    const [res] = await db.query(
-      'INSERT INTO patient (first_name,last_name,contact_no,email) VALUES (?,?,?,?)',
-      [p.first_name || 'User', p.last_name || 'Client', p.contact_no || null, p.email || null]
-    );
-    return res.insertId;
-  }
-  return null;
-}
-
-function toDate(val) {
-  if (!val) return null;
-  const d = new Date(val);
-  return Number.isNaN(d.getTime()) ? null : d;
-}
+const ACTIVE_STATUSES = ['pending', 'confirmed'];
 
 function defaultEnd(start) {
   return new Date(start.getTime() + 30 * 60000);
 }
 
-async function hasConflict({ doctor_id, start_time, end_time, excludeId = null }) {
-  const sql = `
-    SELECT 1
-      FROM appointment
-     WHERE doctor_id = ?
-       AND status = 'scheduled'
-       AND start_time < ?
-       AND end_time > ?
-       ${excludeId ? 'AND appointment_id <> ?' : ''}
-     LIMIT 1
-  `;
-  const params = excludeId
-    ? [doctor_id, end_time, start_time, excludeId]
-    : [doctor_id, end_time, start_time];
-  const [rows] = await db.query(sql, params);
-  return rows.length > 0;
+function toPlain(record) {
+  if (!record) return null;
+  const plain = record.get({ plain: true });
+  plain.id = plain.appointment_id;
+  return plain;
 }
 
-async function create(appointment) {
-  let { patient_id, doctor_id, start_time, end_time: end } = appointment;
-  patient_id = await ensurePatientId(appointment);
-  const start = toDate(start_time);
-  if (!patient_id || !doctor_id || !start) {
-    const err = new Error('Invalid payload');
-    err.status = 400;
-    throw err;
+async function ensurePatientId(payload, transaction) {
+  if (payload.patient_id) {
+    const exists = await Patient.findByPk(payload.patient_id, { transaction });
+    if (!exists) {
+      const err = new Error('Patient not found');
+      err.status = 400;
+      throw err;
+    }
+    return payload.patient_id;
   }
-  const end_time = toDate(end) || defaultEnd(start);
-
-  const conflict = await hasConflict({ doctor_id, start_time: start, end_time });
-  if (conflict) {
-    const err = new Error('Doctor has a conflicting appointment');
-    err.status = 409;
-    throw err;
+  const details = payload.patient || {};
+  if (!details.first_name && !details.last_name && !details.email) {
+    return null;
   }
-
-  const slot = await Availability.claim(doctor_id, start, end_time);
-  if (!slot) {
-    const err = new Error('No availability slot matches the requested time window');
-    err.status = 409;
-    throw err;
-  }
-
-  try {
-    const [result] = await db.query(
-      'INSERT INTO appointment (patient_id, doctor_id, availability_id, start_time, end_time, notes, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [patient_id, doctor_id, slot.availability_id, start, end_time, appointment.notes || '', 'scheduled']
-    );
-    return {
-      id: result.insertId,
-      patient_id,
-      doctor_id,
-      availability_id: slot.availability_id,
-      start_time: start,
-      end_time,
-      status: 'scheduled',
-      notes: appointment.notes || '',
-    };
-  } catch (err) {
-    await Availability.release(slot.availability_id);
-    throw err;
-  }
-}
-
-async function findById(id) {
-  const [rows] = await db.query('SELECT * FROM appointment WHERE appointment_id = ?', [id]);
-  return rows[0] || null;
-}
-
-async function findDetailedById(id) {
-  const [rows] = await db.query(
-    `SELECT a.*,
-            p.first_name AS patient_first_name,
-            p.last_name AS patient_last_name,
-            p.email AS patient_email,
-            d.first_name AS doctor_first_name,
-            d.last_name AS doctor_last_name,
-            d.hospital,
-            d.specialty,
-            dep.name AS department_name
-       FROM appointment a
-       JOIN patient p ON p.patient_id = a.patient_id
-       JOIN doctor d ON d.doctor_id = a.doctor_id
-       LEFT JOIN department dep ON dep.department_id = d.department_id
-      WHERE a.appointment_id = ?`,
-    [id]
+  const patient = await Patient.create(
+    {
+      first_name: details.first_name || 'User',
+      last_name: details.last_name || 'Client',
+      contact_no: details.contact_no || null,
+      email: details.email || null,
+      date_of_birth: details.date_of_birth || null,
+      gender: details.gender || null,
+      address: details.address || null,
+    },
+    { transaction }
   );
-  return rows[0] || null;
+  return patient.patient_id;
 }
 
-async function findAll(filter = {}) {
-  const where = [];
-  const params = [];
-  if (filter.doctor_id) {
-    where.push('doctor_id = ?');
-    params.push(filter.doctor_id);
+async function hasConflict({ doctor_id, start_time, end_time, excludeId = null, transaction }) {
+  const where = {
+    doctor_id,
+    status: { [Op.in]: ACTIVE_STATUSES },
+    [Op.and]: [
+      { start_time: { [Op.lt]: end_time } },
+      { end_time: { [Op.gt]: start_time } },
+    ],
+  };
+  if (excludeId) {
+    where.appointment_id = { [Op.ne]: excludeId };
   }
-  if (filter.patient_id) {
-    where.push('patient_id = ?');
-    params.push(filter.patient_id);
-  }
-  if (filter.status) {
-    where.push('status = ?');
-    params.push(filter.status);
-  }
-  if (filter.from) {
-    const d = toDate(filter.from);
-    if (d) {
-      where.push('start_time >= ?');
-      params.push(d);
-    }
-  }
-  if (filter.to) {
-    const d = toDate(filter.to);
-    if (d) {
-      where.push('start_time <= ?');
-      params.push(d);
-    }
-  }
-  const sql = `SELECT * FROM appointment ${where.length ? 'WHERE ' + where.join(' AND ') : ''} ORDER BY start_time DESC`;
-  const [rows] = await db.query(sql, params);
-  return rows;
+  const count = await Appointment.count({ where, transaction });
+  return count > 0;
 }
 
-async function cancel(id) {
-  const appt = await findById(id);
-  if (!appt) return null;
-  await db.query('UPDATE appointment SET status = ? WHERE appointment_id = ?', ['canceled', id]);
-  if (appt.availability_id) {
-    await Availability.release(appt.availability_id);
-  }
-  return { ...appt, status: 'canceled' };
-}
-
-async function reschedule(id, payload) {
-  const appt = await findById(id);
-  if (!appt) return null;
-
-  const start = toDate(payload.start_time);
-  const end_time = toDate(payload.end_time) || (start ? defaultEnd(start) : null);
-  if (!start || !end_time || end_time <= start) {
-    const err = new Error('Invalid start_time/end_time');
-    err.status = 400;
+async function withinTransaction(handler) {
+  const transaction = await sequelize.transaction();
+  try {
+    const result = await handler(transaction);
+    await transaction.commit();
+    return result;
+  } catch (err) {
+    await transaction.rollback();
     throw err;
   }
+}
 
-  const conflict = await hasConflict({
-    doctor_id: appt.doctor_id,
-    start_time: start,
-    end_time,
-    excludeId: id,
-  });
-  if (conflict) {
-    const err = new Error('Doctor has a conflicting appointment');
-    err.status = 409;
-    throw err;
-  }
-
-  const oldAvailabilityId = appt.availability_id || null;
-  let availabilityIdToUse = oldAvailabilityId;
-  let claimedNewSlot = null;
-
-  const canReuseCurrent = oldAvailabilityId
-    ? await Availability.slotCovers(oldAvailabilityId, start, end_time)
-    : false;
-
-  if (!canReuseCurrent) {
-    claimedNewSlot = await Availability.claim(appt.doctor_id, start, end_time);
-    if (!claimedNewSlot) {
+async function create(payload) {
+  return withinTransaction(async (transaction) => {
+    const patientId = await ensurePatientId(payload, transaction);
+    const doctorId = payload.doctor_id;
+    const start = new Date(payload.start_time);
+    if (!doctorId || Number.isNaN(start.getTime())) {
+      const err = new Error('Invalid payload');
+      err.status = 400;
+      throw err;
+    }
+    const end = payload.end_time ? new Date(payload.end_time) : defaultEnd(start);
+    if (await hasConflict({ doctor_id: doctorId, start_time: start, end_time: end, transaction })) {
+      const err = new Error('Doctor has a conflicting appointment');
+      err.status = 409;
+      throw err;
+    }
+    const slot = await AvailabilityService.claim(doctorId, start, end, { transaction });
+    if (!slot) {
       const err = new Error('No availability slot matches the requested time window');
       err.status = 409;
       throw err;
     }
-    availabilityIdToUse = claimedNewSlot.availability_id;
-  }
-
-  try {
-    await db.query(
-      'UPDATE appointment SET start_time = ?, end_time = ?, availability_id = ? WHERE appointment_id = ?',
-      [start, end_time, availabilityIdToUse, id]
+    const appointment = await Appointment.create(
+      {
+        patient_id: patientId,
+        doctor_id: doctorId,
+        availability_id: slot.availability_id,
+        start_time: start,
+        end_time: end,
+        notes: payload.notes || '',
+        status: 'pending',
+      },
+      { transaction }
     );
-  } catch (err) {
-    if (claimedNewSlot) {
-      await Availability.release(claimedNewSlot.availability_id);
+    return toPlain(appointment);
+  });
+}
+
+async function findById(id) {
+  const appt = await Appointment.findByPk(id, {
+    include: [
+      { model: Patient, as: 'patient' },
+      { model: Doctor, as: 'doctor', include: [{ model: Department, as: 'department', attributes: ['department_id', 'name'] }] },
+      { model: Availability, as: 'availability' },
+    ],
+  });
+  return toPlain(appt);
+}
+
+async function findDetailedById(id) {
+  return findById(id);
+}
+
+async function findAll({ doctor_id, patient_id, status, from, to } = {}) {
+  const where = {};
+  if (doctor_id) where.doctor_id = doctor_id;
+  if (patient_id) where.patient_id = patient_id;
+  if (status) where.status = status;
+  if (from || to) {
+    where.start_time = {};
+    if (from) where.start_time[Op.gte] = new Date(from);
+    if (to) where.start_time[Op.lte] = new Date(to);
+  }
+  const rows = await Appointment.findAll({
+    where,
+    include: [
+      { model: Patient, as: 'patient', attributes: ['patient_id', 'first_name', 'last_name', 'email'] },
+      { model: Doctor, as: 'doctor', attributes: ['doctor_id', 'first_name', 'last_name', 'specialty'] },
+    ],
+    order: [['start_time', 'DESC']],
+  });
+  return rows.map(toPlain);
+}
+
+async function cancel(id) {
+  return withinTransaction(async (transaction) => {
+    const appt = await Appointment.findByPk(id, { transaction });
+    if (!appt) return null;
+    if (appt.status === 'cancelled') return appt.get({ plain: true });
+    if (appt.availability_id) {
+      await AvailabilityService.release(appt.availability_id, { transaction });
     }
+    await appt.update({ status: 'cancelled' }, { transaction });
+    return toPlain(appt);
+  });
+}
+
+async function reschedule(id, payload) {
+  return withinTransaction(async (transaction) => {
+    const appt = await Appointment.findByPk(id, { transaction });
+    if (!appt) return null;
+    const start = new Date(payload.start_time);
+    const end = payload.end_time ? new Date(payload.end_time) : defaultEnd(start);
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+      const err = new Error('Invalid reschedule payload');
+      err.status = 400;
+      throw err;
+    }
+    if (await hasConflict({ doctor_id: appt.doctor_id, start_time: start, end_time: end, excludeId: id, transaction })) {
+      const err = new Error('Doctor has a conflicting appointment');
+      err.status = 409;
+      throw err;
+    }
+
+    let availabilityId = appt.availability_id;
+    const canReuse = availabilityId
+      ? await AvailabilityService.slotCovers(availabilityId, start, end)
+      : false;
+    let claimedSlot = null;
+    if (!canReuse) {
+      claimedSlot = await AvailabilityService.claim(appt.doctor_id, start, end, { transaction });
+      if (!claimedSlot) {
+        const err = new Error('No availability slot matches the requested time window');
+        err.status = 409;
+        throw err;
+      }
+      availabilityId = claimedSlot.availability_id;
+    }
+
+    await appt.update({ start_time: start, end_time: end, availability_id: availabilityId }, { transaction });
+
+    if (claimedSlot && appt.availability_id && appt.availability_id !== availabilityId) {
+      await AvailabilityService.release(appt.availability_id, { transaction });
+    }
+
+    return toPlain(appt);
+  });
+}
+
+async function updateFields(id, payload = {}) {
+  const allowedStatus = ['pending', 'confirmed', 'completed', 'cancelled'];
+  if (payload.status && !allowedStatus.includes(payload.status)) {
+    const err = new Error('Invalid status value');
+    err.status = 400;
     throw err;
   }
-
-  if (claimedNewSlot && oldAvailabilityId && oldAvailabilityId !== claimedNewSlot.availability_id) {
-    await Availability.release(oldAvailabilityId);
-  }
-
-  return { ...appt, start_time: start, end_time, availability_id: availabilityIdToUse };
+  const appt = await Appointment.findByPk(id);
+  if (!appt) return null;
+  await appt.update({
+    status: payload.status || appt.status,
+    notes: Object.prototype.hasOwnProperty.call(payload, 'notes') ? payload.notes : appt.notes,
+  });
+  return toPlain(appt);
 }
 
 async function findByPatient(patientId) {
-  const [rows] = await db.query('SELECT * FROM appointment WHERE patient_id = ? ORDER BY start_time DESC', [patientId]);
-  return rows;
+  const rows = await Appointment.findAll({
+    where: { patient_id: patientId },
+    include: [{ model: Doctor, as: 'doctor', attributes: ['doctor_id', 'first_name', 'last_name', 'specialty'] }],
+    order: [['start_time', 'DESC']],
+  });
+  return rows.map(toPlain);
 }
 
 async function summary({ windowDays = 14 } = {}) {
-  const [statusRows] = await db.query('SELECT status, COUNT(*) AS total FROM appointment GROUP BY status');
-  const [upcomingRows] = await db.query(
-    `SELECT d.doctor_id,
-            d.first_name,
-            d.last_name,
-            COUNT(*) AS upcoming
-       FROM appointment a
-       JOIN doctor d ON d.doctor_id = a.doctor_id
-      WHERE a.status = 'scheduled'
-        AND a.start_time >= NOW()
-      GROUP BY d.doctor_id, d.first_name, d.last_name
-      ORDER BY upcoming DESC
-      LIMIT 8`
-  );
-  const [dailyRows] = await db.query(
-    `SELECT DATE(start_time) AS day, COUNT(*) AS total
-       FROM appointment
-      WHERE start_time >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
-      GROUP BY DATE(start_time)
-      ORDER BY day ASC`,
-    [windowDays]
-  );
-  const [utilRows] = await db.query(
-    `SELECT availability_id, doctor_id, start_time, end_time, max_patients, booked_patients
-       FROM doctor_availability
-      WHERE start_time >= NOW()
-      ORDER BY start_time ASC
-      LIMIT 20`
-  );
+  const now = new Date();
+  const windowStart = new Date(now.getTime() - windowDays * 24 * 3600 * 1000);
+
+  const [statusRows, topRows, dailyRows] = await Promise.all([
+    Appointment.findAll({
+      attributes: ['status', [fn('COUNT', col('appointment_id')), 'total']],
+      group: ['status'],
+    }),
+    Appointment.findAll({
+      attributes: ['doctor_id', [fn('COUNT', col('appointment_id')), 'upcoming']],
+      where: {
+        status: { [Op.in]: ACTIVE_STATUSES },
+        start_time: { [Op.gte]: now },
+      },
+      include: [{ model: Doctor, as: 'doctor', attributes: ['first_name', 'last_name'] }],
+      group: ['doctor_id', 'doctor.doctor_id', 'doctor.first_name', 'doctor.last_name'],
+      order: [[literal('upcoming'), 'DESC']],
+      limit: 8,
+    }),
+    Appointment.findAll({
+      attributes: [
+        [literal('DATE(start_time)'), 'day'],
+        [fn('COUNT', col('appointment_id')), 'total'],
+      ],
+      where: { start_time: { [Op.gte]: windowStart } },
+      group: [literal('day')],
+      order: [[literal('day'), 'ASC']],
+    }),
+  ]);
+
+  const utilization = await Availability.findAll({
+    where: { start_time: { [Op.gte]: now } },
+    attributes: ['availability_id', 'doctor_id', 'start_time', 'end_time', 'max_patients', 'booked_patients'],
+    include: [{ model: Doctor, as: 'doctor', attributes: ['first_name', 'last_name'] }],
+    order: [['start_time', 'ASC']],
+    limit: 20,
+  });
 
   return {
-    by_status: statusRows.map((row) => ({ status: row.status, total: Number(row.total) })),
-    top_doctors: upcomingRows.map((row) => ({
-      doctor_id: row.doctor_id,
-      name: `${row.first_name} ${row.last_name}`.trim(),
-      upcoming: Number(row.upcoming),
+    by_status: statusRows.map((row) => ({
+      status: row.get('status'),
+      total: Number(row.get('total')),
     })),
-    daily_trend: dailyRows.map((row) => ({ day: row.day, total: Number(row.total) })),
-    utilization: utilRows.map((row) => ({
-      availability_id: row.availability_id,
-      doctor_id: row.doctor_id,
-      start_time: row.start_time,
-      end_time: row.end_time,
-      max_patients: row.max_patients,
-      booked_patients: row.booked_patients,
-      utilization: row.max_patients ? Number((row.booked_patients / row.max_patients).toFixed(2)) : 0,
+    top_doctors: topRows.map((row) => ({
+      doctor_id: row.get('doctor_id'),
+      name: `${row.doctor.first_name} ${row.doctor.last_name}`.trim(),
+      upcoming: Number(row.get('upcoming')),
     })),
+    daily_trend: dailyRows.map((row) => ({
+      day: row.get('day'),
+      total: Number(row.get('total')),
+    })),
+    utilization: utilization.map((row) => {
+      const plain = row.get({ plain: true });
+      return {
+        ...plain,
+        doctor_name: `${plain.doctor?.first_name || ''} ${plain.doctor?.last_name || ''}`.trim(),
+        utilization:
+          plain.max_patients > 0 ? Number((plain.booked_patients / plain.max_patients).toFixed(2)) : 0,
+      };
+    }),
   };
+}
+
+async function remove(id) {
+  return withinTransaction(async (transaction) => {
+    const appt = await Appointment.findByPk(id, { transaction });
+    if (!appt) return null;
+    if (appt.availability_id) {
+      await AvailabilityService.release(appt.availability_id, { transaction });
+    }
+    await appt.destroy({ transaction });
+    return toPlain(appt);
+  });
 }
 
 module.exports = {
@@ -281,7 +309,9 @@ module.exports = {
   findDetailedById,
   findAll,
   cancel,
+  updateFields,
   reschedule,
   findByPatient,
   summary,
+  remove,
 };

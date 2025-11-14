@@ -1,15 +1,42 @@
 const Appointment = require('../models/appointment.model');
 const { sendAppointmentConfirmation } = require('../providers/mail');
+const { Prohibited, Unauthorized } = require('../../helpers/errors');
+
+function isAdmin(req) {
+  return req.user?.role === 'admin';
+}
+
+function isDoctor(req) {
+  return req.user?.role === 'doctor' && req.user?.doctor_id;
+}
+
+function isPatient(req) {
+  return req.user?.role === 'patient' && req.user?.patient_id;
+}
+
+function canAccessAppointment(req, appointment) {
+  if (isAdmin(req)) return true;
+  if (isDoctor(req) && appointment.doctor_id === req.user.doctor_id) return true;
+  if (isPatient(req) && appointment.patient_id === req.user.patient_id) return true;
+  return false;
+}
 
 async function list(req, res, next) {
   try {
-    const rows = await Appointment.findAll({
+    const filters = {
       doctor_id: req.query.doctor_id,
       patient_id: req.query.patient_id,
       status: req.query.status,
       from: req.query.from,
       to: req.query.to,
-    });
+    };
+    if (isPatient(req)) {
+      filters.patient_id = req.user.patient_id;
+    }
+    if (isDoctor(req)) {
+      filters.doctor_id = req.user.doctor_id;
+    }
+    const rows = await Appointment.findAll(filters);
     res.json(rows);
   } catch (err) {
     next(err);
@@ -34,6 +61,9 @@ async function getById(req, res, next) {
     const appt = await Appointment.findById(req.params.id);
     if (!appt) {
       return res.status(404).json({ message: 'Appointment not found' });
+    }
+    if (!canAccessAppointment(req, appt)) {
+      return res.status(403).json({ message: 'Insufficient permission' });
     }
     res.json(appt);
   } catch (err) {
@@ -72,11 +102,15 @@ async function create(req, res, next) {
 
 async function cancel(req, res, next) {
   try {
-    const appt = await Appointment.cancel(req.params.id);
-    if (!appt) {
+    const existing = await Appointment.findById(req.params.id);
+    if (!existing) {
       return res.status(404).json({ message: 'Appointment not found' });
     }
-    res.json(appt);
+    if (!canAccessAppointment(req, existing)) {
+      return res.status(403).json({ message: 'Insufficient permission' });
+    }
+    const appt = await Appointment.cancel(req.params.id);
+    res.json(appt || existing);
   } catch (err) {
     next(err);
   }
@@ -84,10 +118,14 @@ async function cancel(req, res, next) {
 
 async function reschedule(req, res, next) {
   try {
-    const appt = await Appointment.reschedule(req.params.id, req.body);
-    if (!appt) {
+    const existing = await Appointment.findById(req.params.id);
+    if (!existing) {
       return res.status(404).json({ message: 'Appointment not found' });
     }
+    if (!canAccessAppointment(req, existing)) {
+      return res.status(403).json({ message: 'Insufficient permission' });
+    }
+    const appt = await Appointment.reschedule(req.params.id, req.body);
     res.json(appt);
   } catch (err) {
     next(err);
@@ -97,6 +135,12 @@ async function reschedule(req, res, next) {
 async function listByPatient(req, res, next) {
   try {
     const patientId = req.params.patientId;
+    if (isPatient(req) && Number(patientId) !== Number(req.user.patient_id)) {
+      return res.status(403).json({ message: 'Insufficient permission' });
+    }
+    if (isDoctor(req) && !isAdmin(req)) {
+      return res.status(403).json({ message: 'Insufficient permission' });
+    }
     const rows = await Appointment.findByPatient(patientId);
     res.json(rows);
   } catch (err) {
@@ -114,4 +158,35 @@ async function summary(req, res, next) {
   }
 }
 
-module.exports = { list, listMine, getById, create, cancel, reschedule, listByPatient, summary };
+async function updateFields(req, res, next) {
+  try {
+    const appt = await Appointment.findById(req.params.id);
+    if (!appt) {
+      return res.status(404).json({ message: 'Appointment not found' });
+    }
+    if (!isAdmin(req) && !(isDoctor(req) && appt.doctor_id === req.user.doctor_id)) {
+      return res.status(403).json({ message: 'Insufficient permission' });
+    }
+    const updated = await Appointment.updateFields(req.params.id, req.body);
+    res.json(updated);
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function remove(req, res, next) {
+  try {
+    if (!isAdmin(req)) {
+      return res.status(403).json({ message: 'Insufficient permission' });
+    }
+    const deleted = await Appointment.remove(req.params.id);
+    if (!deleted) {
+      return res.status(404).json({ message: 'Appointment not found' });
+    }
+    res.json({ message: 'Appointment deleted', appointment: deleted });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { list, listMine, getById, create, cancel, reschedule, listByPatient, summary, updateFields, remove };

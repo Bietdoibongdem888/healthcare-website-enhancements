@@ -1,5 +1,4 @@
-﻿const Joi = require('joi');
-const db = require('../providers/db');
+const Joi = require('joi');
 const { TokenPair, verify } = require('../providers/jwt');
 const { hashPassword, comparePassword } = require('../providers/hash');
 const { Unauthorized, BadRequest, NotFound } = require('../../helpers/errors');
@@ -8,6 +7,7 @@ const Redis = require('ioredis');
 const config = require('config');
 const mail = require('../providers/mail');
 const { audit } = require('../providers');
+const { Staff, Patient, sequelize } = require('../database');
 const { issueTokenForStaff } = require('../services/auth.service');
 
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()[\]{}\-_=+\\|;:'",.<>/?]).{8,64}$/;
@@ -30,7 +30,7 @@ const registerSchema = Joi.object({
     .pattern(PASSWORD_REGEX)
     .message('Password must be 8-64 characters and include uppercase, lowercase, digit and special character.')
     .required(),
-  role: Joi.string().valid('admin', 'user').default('user'),
+  role: Joi.string().valid('admin', 'doctor', 'patient').default('patient'),
 });
 
 const changePasswordSchema = Joi.object({
@@ -58,7 +58,7 @@ const resetEmailOtpSchema = Joi.object({
   otp: Joi.string().length(6).required(),
   new_password: Joi.string()
     .pattern(PASSWORD_REGEX)
-    .message('Password must be 8-64 characters and include uppercase, lowercase, digit và đặc biệt.')
+    .message('Password must be 8-64 characters and include uppercase, lowercase, digit và đ?c bi?t.')
     .required(),
 });
 
@@ -96,12 +96,8 @@ async function login(req, res, next) {
     const { error, value } = loginSchema.validate(req.body, { abortEarly: false });
     if (error) throw new BadRequest(formatValidationError(error.details));
     const { email, password } = value;
-    const [rows] = await db.query(
-      'SELECT staff_id, first_name, last_name, phone, email, password, role, is_active, patient_id FROM staff WHERE email = ?',
-      [email]
-    );
-    const user = rows[0];
-    if (!user || user.is_active === 0) throw new Unauthorized('Invalid credentials');
+    const user = await Staff.findOne({ where: { email } });
+    if (!user || !user.is_active) throw new Unauthorized('Invalid credentials');
     const ok = await comparePassword(password, user.password);
     if (!ok) throw new Unauthorized('Invalid credentials');
     const pair = await TokenPair.create({
@@ -112,6 +108,7 @@ async function login(req, res, next) {
       email: user.email,
       phone: user.phone || null,
       patient_id: user.patient_id,
+      doctor_id: user.doctor_id || null,
     });
     res.json({
       access: pair.access,
@@ -125,6 +122,7 @@ async function login(req, res, next) {
         phone: user.phone || null,
         email: user.email,
         patient_id: user.patient_id,
+        doctor_id: user.doctor_id || null,
       },
     });
     try {
@@ -142,19 +140,42 @@ async function register(req, res, next) {
     const { error, value } = registerSchema.validate(req.body, { abortEarly: false });
     if (error) throw new BadRequest(formatValidationError(error.details));
     const { first_name, last_name, email, password, role, phone } = value;
-    const [dup] = await db.query('SELECT staff_id FROM staff WHERE email = ?', [email]);
-    if (dup.length) throw new BadRequest({ email: 'Email already in use' });
+    const existing = await Staff.count({ where: { email } });
+    if (existing) throw new BadRequest({ email: 'Email already in use' });
     const hashed = await hashPassword(password);
-    const [pIns] = await db.query(
-      'INSERT INTO patient (first_name, last_name, contact_no, email) VALUES (?,?,?,?)',
-      [first_name, last_name, phone, email]
-    );
-    const patient_id = pIns.insertId;
-    const [ins] = await db.query(
-      'INSERT INTO staff (first_name,last_name,phone,email,password,role,is_active,patient_id) VALUES (?,?,?,?,?,?,1,?)',
-      [first_name, last_name, phone, email, hashed, role, patient_id]
-    );
-    const user = { id: ins.insertId, first_name, last_name, email, role, patient_id, phone };
+    const staff = await sequelize.transaction(async (transaction) => {
+      const patient = await Patient.create(
+        {
+          first_name,
+          last_name,
+          contact_no: phone,
+          email,
+        },
+        { transaction }
+      );
+      return Staff.create(
+        {
+          first_name,
+          last_name,
+          phone,
+          email,
+          password: hashed,
+          role,
+          patient_id: patient.patient_id,
+        },
+        { transaction }
+      );
+    });
+    const user = {
+      id: staff.staff_id,
+      first_name,
+      last_name,
+      email,
+      role,
+      patient_id: staff.patient_id,
+      doctor_id: staff.doctor_id || null,
+      phone,
+    };
     const pair = await TokenPair.create({
       id: user.id,
       role: user.role,
@@ -162,11 +183,10 @@ async function register(req, res, next) {
       last_name,
       email,
       phone,
-      patient_id,
+      patient_id: user.patient_id,
+      doctor_id: user.doctor_id,
     });
-    res
-      .status(201)
-      .json({ message: 'Registered', user, access: pair.access, refresh: pair.refresh, token: pair.access });
+    res.status(201).json({ message: 'Registered', user, access: pair.access, refresh: pair.refresh, token: pair.access });
   } catch (err) {
     next(err);
   }
@@ -193,6 +213,7 @@ async function refresh(req, res, next) {
         email: payload.email,
         phone: payload.phone || null,
         patient_id: payload.patient_id,
+        doctor_id: payload.doctor_id || null,
       },
       pair.jti
     );
@@ -229,13 +250,12 @@ async function changePassword(req, res, next) {
     if (error) throw new BadRequest(formatValidationError(error.details));
     const userId = req.user?.id;
     if (!userId) throw new Unauthorized();
-    const [rows] = await db.query('SELECT staff_id, password FROM staff WHERE staff_id = ?', [userId]);
-    const user = rows[0];
+    const user = await Staff.findByPk(userId);
     if (!user) throw new NotFound('User not found');
     const ok = await comparePassword(value.current_password, user.password);
     if (!ok) throw new Unauthorized('Current password does not match');
     const hashed = await hashPassword(value.new_password);
-    await db.query('UPDATE staff SET password = ? WHERE staff_id = ?', [hashed, userId]);
+    await user.update({ password: hashed });
     res.json({ message: 'Password changed' });
   } catch (err) {
     next(err);
@@ -246,8 +266,7 @@ async function forgotPassword(req, res, next) {
   try {
     const { error, value } = forgotSchema.validate(req.body);
     if (error) throw new BadRequest(error);
-    const [rows] = await db.query('SELECT staff_id, email FROM staff WHERE email = ?', [value.email]);
-    const user = rows[0];
+    const user = await Staff.findOne({ where: { email: value.email }, attributes: ['staff_id', 'email'] });
     if (!user) return res.json({ message: 'If email exists, instructions sent' });
     const token = uuid();
     const key = `pwdreset:${token}`;
@@ -264,13 +283,12 @@ async function forgotPasswordEmailOtp(req, res, next) {
   try {
     const { error, value } = forgotEmailOtpSchema.validate(req.body, { abortEarly: false });
     if (error) throw new BadRequest(formatValidationError(error.details));
-    const [rows] = await db.query('SELECT staff_id, email FROM staff WHERE email = ?', [value.email]);
-    const user = rows[0];
+    const user = await Staff.findOne({ where: { email: value.email }, attributes: ['staff_id', 'email'] });
     if (!user) return res.json({ message: 'If email exists, OTP sent' });
     const otp = generateOtp();
     await redis.set(`pwdotp:email:${value.email}`, JSON.stringify({ userId: user.staff_id, otp }), 'EX', 10 * 60);
-    const html = `<p>Mã OTP đặt lại mật khẩu HealthCare+: <strong>${otp}</strong></p><p>Mã có hiệu lực trong 10 phút.</p>`;
-    await mail.send(user.email, 'Mã OTP đặt lại mật khẩu', html, `OTP HealthCare+: ${otp}`);
+    const html = `<p>Your HealthCare+ OTP is <strong>${otp}</strong></p><p>The code expires in 10 minutes.</p>`;
+    await mail.send(user.email, 'HealthCare+ OTP', html, `HealthCare+ OTP: ${otp}`);
     res.json({ message: 'OTP sent to your email' });
   } catch (err) {
     next(err);
@@ -286,8 +304,10 @@ async function resetPasswordEmailOtp(req, res, next) {
     if (!payload) throw new Unauthorized('OTP invalid or expired');
     const data = JSON.parse(payload);
     if (data.otp !== value.otp) throw new Unauthorized('OTP invalid or expired');
+    const staff = await Staff.findByPk(Number(data.userId));
+    if (!staff) throw new Unauthorized('User not found');
     const hashed = await hashPassword(value.new_password);
-    await db.query('UPDATE staff SET password = ? WHERE staff_id = ?', [hashed, Number(data.userId)]);
+    await staff.update({ password: hashed });
     await redis.del(key);
     res.json({ message: 'Password reset successful' });
   } catch (err) {
@@ -299,8 +319,7 @@ async function forgotPasswordPhone(req, res, next) {
   try {
     const { error, value } = forgotPhoneSchema.validate(req.body, { abortEarly: false });
     if (error) throw new BadRequest(formatValidationError(error.details));
-    const [rows] = await db.query('SELECT staff_id, phone FROM staff WHERE phone = ?', [value.phone]);
-    const user = rows[0];
+    const user = await Staff.findOne({ where: { phone: value.phone }, attributes: ['staff_id', 'phone'] });
     if (!user) return res.json({ message: 'If phone exists, OTP sent' });
     const otp = generateOtp();
     await redis.set(`pwdotp:phone:${value.phone}`, JSON.stringify({ userId: user.staff_id, otp }), 'EX', 10 * 60);
@@ -320,8 +339,10 @@ async function resetPasswordPhone(req, res, next) {
     if (!payload) throw new Unauthorized('OTP invalid or expired');
     const data = JSON.parse(payload);
     if (data.otp !== value.otp) throw new Unauthorized('OTP invalid or expired');
+    const staff = await Staff.findByPk(Number(data.userId));
+    if (!staff) throw new Unauthorized('User not found');
     const hashed = await hashPassword(value.new_password);
-    await db.query('UPDATE staff SET password = ? WHERE staff_id = ?', [hashed, Number(data.userId)]);
+    await staff.update({ password: hashed });
     await redis.del(key);
     res.json({ message: 'Password reset successful' });
   } catch (err) {
@@ -337,7 +358,9 @@ async function resetPassword(req, res, next) {
     const userId = await redis.get(key);
     if (!userId) throw new Unauthorized('Invalid or expired token');
     const hashed = await hashPassword(value.new_password);
-    await db.query('UPDATE staff SET password = ? WHERE staff_id = ?', [hashed, Number(userId)]);
+    const staff = await Staff.findByPk(Number(userId));
+    if (!staff) throw new Unauthorized('User not found');
+    await staff.update({ password: hashed });
     await redis.del(key);
     res.json({ message: 'Password reset successful' });
   } catch (err) {
@@ -349,11 +372,9 @@ async function me(req, res, next) {
   try {
     const userId = req.user?.id;
     if (!userId) throw new Unauthorized();
-    const [rows] = await db.query(
-      'SELECT staff_id, first_name, last_name, phone, email, role, is_active, patient_id FROM staff WHERE staff_id = ?',
-      [userId]
-    );
-    const user = rows[0];
+    const user = await Staff.findByPk(userId, {
+      attributes: ['staff_id', 'first_name', 'last_name', 'phone', 'email', 'role', 'is_active', 'patient_id'],
+    });
     if (!user) throw new NotFound('User not found');
     res.json({
       id: user.staff_id,
@@ -364,6 +385,7 @@ async function me(req, res, next) {
       role: user.role,
       is_active: !!user.is_active,
       patient_id: user.patient_id,
+      doctor_id: user.doctor_id || null,
     });
   } catch (err) {
     next(err);
@@ -376,7 +398,7 @@ function sendOAuthWindowResponse(res, payload) {
   const body = `
 <!DOCTYPE html>
 <html lang="vi">
-  <head><meta charset="utf-8"/><title>Đăng nhập HealthCare+</title></head>
+  <head><meta charset="utf-8"/><title>Đăng nh?p HealthCare+</title></head>
   <body>
     <script>
       (function () {
@@ -391,7 +413,7 @@ function sendOAuthWindowResponse(res, payload) {
         window.close();
       })();
     </script>
-    <p>Nếu cửa sổ không tự đóng, bạn có thể đóng bằng tay.</p>
+    <p>N?u c?a s? không t? đóng, b?n có th? đóng b?ng tay.</p>
   </body>
 </html>`;
   res.type('html').send(body);
@@ -407,14 +429,14 @@ async function socialSuccess(req, res) {
     sendOAuthWindowResponse(res, { type: 'oauth-success', tokens });
   } catch (err) {
     console.log('[SOCIAL LOGIN ERROR]', err?.message);
-    sendOAuthWindowResponse(res, { type: 'oauth-error', message: 'Không thể đăng nhập với tài khoản xã hội.' });
+    sendOAuthWindowResponse(res, { type: 'oauth-error', message: 'Không th? đăng nh?p v?i tài kho?n x? h?i.' });
   }
 }
 
 function socialFailure(req, res) {
   sendOAuthWindowResponse(res, {
     type: 'oauth-error',
-    message: 'Đăng nhập thất bại hoặc bị hủy. Vui lòng thử lại.',
+    message: 'Đăng nh?p th?t b?i ho?c b? h?y. Vui l?ng th? l?i.',
   });
 }
 
@@ -434,3 +456,5 @@ module.exports = {
   socialSuccess,
   socialFailure,
 };
+
+
