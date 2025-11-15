@@ -1,4 +1,4 @@
-﻿require("dotenv").config();
+require("dotenv").config();
 const path = require('path');
 process.env["NODE_CONFIG_DIR"] = path.join(__dirname, "config/");
 
@@ -60,16 +60,11 @@ app.use('/api/v1/records', medicalRecordRoutes);
 app.use('/api/v1/meta', metaRoutes);
 app.use('/api/v1/support', supportRoutes);
 
-const clientDist = path.join(__dirname, '../client/dist');
-if (fs.existsSync(clientDist)) {
-  app.use(express.static(clientDist));
-  app.get('*', (req, res, next) => {
-    if (req.path.startsWith('/api/')) return next();
-    return res.sendFile(path.join(clientDist, 'index.html'));
-  });
-} else {
-  app.use('*', (_, res) => { res.status(404).send({ message: 'Resource not found!' }); });
-}
+app.get('/', (_, res) => res.redirect('/api-docs/'));
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api/')) return next();
+  return res.redirect('/api-docs/');
+});
 
 app.use(error);
 
@@ -77,7 +72,11 @@ async function bootstrap() {
   try {
     await sequelize.authenticate();
     const PORT = process.env.PORT || config.get('port') || 3000;
-    app.listen(PORT, () => console.log(`Healthcare server listening on port ${PORT}`));
+    app.listen(PORT, () => {
+      console.log(`Healthcare server listening on port ${PORT}`);
+      console.log(`Swagger: http://localhost:${PORT}/api-docs/`);
+      console.log(`Health check: http://localhost:${PORT}/api/v1/health`);
+    });
   } catch (err) {
     console.error('Unable to connect to database', err);
     process.exit(1);
@@ -85,3 +84,9 @@ async function bootstrap() {
 }
 
 bootstrap();
+
+
+
+
+
+
