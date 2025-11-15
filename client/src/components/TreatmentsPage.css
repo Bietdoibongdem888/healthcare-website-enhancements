@@ -1,0 +1,155 @@
+﻿.treatments-page {
+  padding: 3rem 1.5rem 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  background: radial-gradient(circle at top, rgba(14, 165, 233, 0.15), transparent 45%), #020617;
+  color: #f8fafc;
+}
+
+.treatments-hero {
+  border-radius: 1.8rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(6, 182, 212, 0.35));
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.treatments-hero h1 {
+  margin: 0.75rem 0 0.6rem;
+}
+
+.treatments-hero p {
+  color: rgba(226, 232, 240, 0.8);
+  line-height: 1.6;
+}
+
+.eyebrow {
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  color: #38bdf8;
+}
+
+.treatments-layout {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: minmax(0, 260px) minmax(0, 1fr);
+}
+
+.treatments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.treatments-list button {
+  border-radius: 1.2rem;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: rgba(2, 6, 23, 0.6);
+  padding: 0.9rem;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  color: inherit;
+  cursor: pointer;
+}
+
+.treatments-list small {
+  color: rgba(226, 232, 240, 0.6);
+  font-size: 0.8rem;
+}
+
+.treatments-list button.active {
+  border-color: rgba(56, 189, 248, 0.6);
+  background: rgba(14, 116, 144, 0.25);
+}
+
+.treatments-detail {
+  border-radius: 1.5rem;
+  padding: 1.75rem;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.treatments-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.treatments-grid article,
+.treatments-recovery {
+  border-radius: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  padding: 1rem;
+  background: rgba(2, 6, 23, 0.65);
+}
+
+.treatments-grid ul,
+.treatments-recovery ul {
+  list-style: none;
+  margin: 0.8rem 0 0;
+  padding-left: 0;
+  color: rgba(226, 232, 240, 0.8);
+}
+
+.treatments-recovery {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.recovery-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.recovery-tags span {
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  padding: 0.4rem 0.9rem;
+}
+
+.treatments-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  justify-content: flex-end;
+}
+
+.primary,
+.ghost {
+  border-radius: 999px;
+  border: 1px solid transparent;
+  padding: 0.75rem 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.primary {
+  background: linear-gradient(120deg, #2563eb, #06b6d4);
+  color: #0f172a;
+}
+
+.ghost {
+  background: rgba(148, 163, 184, 0.2);
+  color: #f8fafc;
+  border-color: rgba(148, 163, 184, 0.2);
+}
+
+@media (max-width: 900px) {
+  .treatments-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 1024px) {
+  .treatments-page {
+    padding: 4rem 4rem 5rem;
+  }
+}

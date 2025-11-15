@@ -1,0 +1,92 @@
+:root {
+  --hc-footer-bg: #060f1f;
+  --hc-footer-border: rgba(148, 163, 184, 0.2);
+  --hc-footer-text: rgba(226, 232, 240, 0.8);
+}
+
+.hc-footer {
+  background: var(--hc-footer-bg);
+  border-top: 1px solid var(--hc-footer-border);
+  color: #f8fafc;
+}
+
+.hc-footer__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+  display: grid;
+  gap: 2rem;
+}
+
+.hc-footer__grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.hc-footer__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.hc-footer__logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: linear-gradient(120deg, #2563eb, #06b6d4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 1.2rem;
+  color: #fff;
+}
+
+.hc-footer__title {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.hc-footer ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.hc-footer button {
+  border: none;
+  background: none;
+  color: var(--hc-footer-text);
+  text-align: left;
+  font-size: 0.95rem;
+  cursor: pointer;
+  padding: 0;
+}
+
+.hc-footer button:hover {
+  color: #38bdf8;
+}
+
+.hc-footer__subtitle {
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.hc-footer__note {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--hc-footer-border);
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--hc-footer-text);
+}
+
+@media (min-width: 768px) {
+  .hc-footer__grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}

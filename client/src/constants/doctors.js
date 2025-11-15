@@ -1,0 +1,117 @@
+const DOCTORS = [
+  {
+    id: "1",
+    name: "BS. Nguy\u1EC5n V\u0103n An",
+    specialty: "N\u1ED9i Khoa",
+    experience: "15 n\u0103m kinh nghi\u1EC7m",
+    hospital: "B\u1EC7nh vi\u1EC7n B\u1EA1ch Mai",
+    district: "\u0110\u1ED1ng \u0110a",
+    rating: 4.8,
+    reviews: 142,
+    avatar: "",
+    achievements: ["B\xE1c s\u0129 gi\u1ECFi 2023", "Ch\u1EE9ng ch\u1EC9 h\xE0nh ngh\u1EC1"],
+    departmentId: "cardio",
+    languages: ["Ti\u1EBFng Vi\u1EC7t", "English"],
+    focusAreas: ["\u0110\u1EB7t stent", "Ch\u1EA9n \u0111o\xE1n h\xECnh \u1EA3nh tim"]
+  },
+  {
+    id: "2",
+    name: "BS. Tr\u1EA7n Th\u1ECB B\xECnh",
+    specialty: "S\u1EA3n - Nhi",
+    experience: "12 n\u0103m kinh nghi\u1EC7m",
+    hospital: "B\u1EC7nh vi\u1EC7n Ph\u1EE5 S\u1EA3n H\xE0 N\u1ED9i",
+    district: "Ba \u0110\xECnh",
+    rating: 4.9,
+    reviews: 198,
+    avatar: "",
+    achievements: ["Th\u1EA1c s\u0129 Y khoa", "Chuy\xEAn gia s\u1EA3n ph\u1EE5 khoa"],
+    departmentId: "pediatrics",
+    languages: ["Ti\u1EBFng Vi\u1EC7t"],
+    focusAreas: ["Ti\xEAm ch\u1EE7ng", "Kh\xE1m t\u1ED5ng qu\xE1t tr\u1EBB em"]
+  },
+  {
+    id: "3",
+    name: "BS. L\xEA Ho\xE0ng C\u01B0\u1EDDng",
+    specialty: "T\xE2m th\u1EA7n",
+    experience: "10 n\u0103m kinh nghi\u1EC7m",
+    hospital: "B\u1EC7nh vi\u1EC7n E",
+    district: "Hai B\xE0 Tr\u01B0ng",
+    rating: 4.7,
+    reviews: 89,
+    avatar: "",
+    achievements: ["Chuy\xEAn gia t\xE2m l\xFD", "Li\u1EC7u ph\xE1p CBT"],
+    departmentId: "neuro",
+    focusAreas: ["T\u01B0 v\u1EA5n t\xE2m l\xFD", "CBT"]
+  },
+  {
+    id: "4",
+    name: "BS. Ph\u1EA1m Th\u1ECB Dung",
+    specialty: "C\u01A1 x\u01B0\u01A1ng kh\u1EDBp",
+    experience: "18 n\u0103m kinh nghi\u1EC7m",
+    hospital: "B\u1EC7nh vi\u1EC7n 108",
+    district: "Thanh Xu\xE2n",
+    rating: 4.9,
+    reviews: 256,
+    avatar: "",
+    achievements: ["Gi\xE1o s\u01B0", "B\xE1c s\u0129 chuy\xEAn khoa II"],
+    departmentId: "ortho",
+    focusAreas: ["Ph\u1EABu thu\u1EADt n\u1ED9i soi", "Ph\u1EE5c h\u1ED3i v\u1EADn \u0111\u1ED9ng"]
+  },
+  {
+    id: "5",
+    name: "BS. Ho\xE0ng Minh Tu\u1EA5n",
+    specialty: "Ngo\u1EA1i Khoa",
+    experience: "14 n\u0103m kinh nghi\u1EC7m",
+    hospital: "B\u1EC7nh vi\u1EC7n Vi\u1EC7t \u0110\u1EE9c",
+    district: "Ho\xE0n Ki\u1EBFm",
+    rating: 4.8,
+    reviews: 167,
+    avatar: "",
+    achievements: ["Ph\u1EABu thu\u1EADt vi\xEAn gi\u1ECFi", "Ch\u1EE9ng ch\u1EC9 qu\u1ED1c t\u1EBF"],
+    departmentId: "ortho",
+    languages: ["Ti\u1EBFng Vi\u1EC7t", "English"]
+  },
+  {
+    id: "6",
+    name: "BS. \u0110\u1ED7 Thu H\u01B0\u01A1ng",
+    specialty: "Y h\u1ECDc c\u1ED5 truy\u1EC1n",
+    experience: "20 n\u0103m kinh nghi\u1EC7m",
+    hospital: "B\u1EC7nh vi\u1EC7n Y h\u1ECDc C\u1ED5 truy\u1EC1n",
+    district: "C\u1EA7u Gi\u1EA5y",
+    rating: 4.9,
+    reviews: 203,
+    avatar: "",
+    achievements: ["B\xE1c s\u0129 nh\xE2n d\xE2n", "Chuy\xEAn gia ch\xE2m c\u1EE9u"],
+    departmentId: "derma",
+    focusAreas: ["Y h\u1ECDc c\u1ED5 truy\u1EC1n", "\u0110i\u1EC1u tr\u1ECB da li\u1EC5u"]
+  },
+  {
+    id: "7",
+    name: "BS. V\u0169 Th\xE0nh \u0110\u1EA1t",
+    specialty: "Dinh d\u01B0\u1EE1ng",
+    experience: "8 n\u0103m kinh nghi\u1EC7m",
+    hospital: "Vi\u1EC7n Dinh d\u01B0\u1EE1ng Qu\u1ED1c gia",
+    district: "T\xE2y H\u1ED3",
+    rating: 4.6,
+    reviews: 94,
+    avatar: "",
+    achievements: ["Chuy\xEAn gia dinh d\u01B0\u1EE1ng", "T\u01B0 v\u1EA5n gi\u1EA3m c\xE2n"],
+    departmentId: "endocrine"
+  },
+  {
+    id: "8",
+    name: "BS. Mai Lan Anh",
+    specialty: "C\u1EADn l\xE2m s\xE0ng \u2013 h\u1ED7 tr\u1EE3",
+    experience: "11 n\u0103m kinh nghi\u1EC7m",
+    hospital: "B\u1EC7nh vi\u1EC7n Thanh Nh\xE0n",
+    district: "Long Bi\u1EBFn",
+    rating: 4.7,
+    reviews: 128,
+    avatar: "",
+    achievements: ["Chuy\xEAn gia x\xE9t nghi\u1EC7m", "Y h\u1ECDc ch\u1EA9n \u0111o\xE1n"],
+    departmentId: "obgyn"
+  }
+];
+export {
+  DOCTORS
+};
