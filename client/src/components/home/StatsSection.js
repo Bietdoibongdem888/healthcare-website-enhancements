@@ -1,8 +1,8 @@
 const STATS = [
-  { number: "50+", label: "B\xE1c s\u0129 chuy\xEAn khoa" },
-  { number: "10,000+", label: "B\u1EC7nh nh\xE2n tin t\u01B0\u1EDFng" },
-  { number: "8", label: "Chuy\xEAn khoa" },
-  { number: "24/7", label: "H\u1ED7 tr\u1EE3 kh\u1EA9n c\u1EA5p" }
+  { number: "50+", label: "Bác sĩ chuyên khoa" },
+  { number: "10,000+", label: "Bệnh nhân tin tưởng" },
+  { number: "8", label: "Chuyên khoa" },
+  { number: "24/7", label: "Hỗ trợ khẩn cấp" }
 ];
 function StatsSection() {
   return <section className="py-20 px-4 bg-gradient-to-r from-blue-600 to-cyan-600 text-white">

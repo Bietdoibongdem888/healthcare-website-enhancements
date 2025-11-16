@@ -33,7 +33,7 @@ function DoctorTeamPage({ onNavigate }) {
     onClick={() => setDepartment(dept)}
     className={`px-4 py-1.5 rounded-full border text-sm transition ${department === dept ? "bg-blue-600 text-white border-blue-600" : "border-slate-700 text-muted-foreground"}`}
   >
-              {dept === "all" ? "T\u1EA5t c\u1EA3" : dept}
+              {dept === "all" ? "Tất cả" : dept}
             </button>)}
         </div>
 

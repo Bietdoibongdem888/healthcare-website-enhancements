@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
 import { HomePage } from "./components/HomePage";
@@ -15,19 +15,85 @@ import { DoctorTeamPage } from "./components/DoctorTeamPage";
 import { SupportCenterPage } from "./components/SupportCenterPage";
 import { ForgotPasswordPage } from "./components/ForgotPasswordPage";
 import { SupportWidget } from "./components/SupportWidget";
+import { BackButton } from "./components/BackButton";
 import { useAuth } from "./context/AuthContext";
+
 function App() {
   const [currentPage, setCurrentPage] = useState("home");
+  const [navHistory, setNavHistory] = useState(["home"]);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const historyRef = useRef("home");
+  const historyActionRef = useRef("push");
+  const isHandlingPopRef = useRef(false);
   const { user, logout } = useAuth();
-  const handleNavigate = (page) => {
+
+  const handleNavigate = (page, options = {}) => {
+    historyActionRef.current = options.replace ? "replace" : "push";
     setCurrentPage(page);
+    setNavHistory((prev) => {
+      let base = prev;
+      if (options.replace && prev.length) {
+        base = prev.slice(0, -1);
+      }
+      if (base[base.length - 1] === page) {
+        return base;
+      }
+      return [...base, page];
+    });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+  const handleBack = () => {
+    if (navHistory.length <= 1) {
+      handleNavigate("home", { replace: true });
+      return;
+    }
+    window.history.back();
+  };
+
   const handleLogout = async () => {
     await logout();
-    setCurrentPage("home");
+    handleNavigate("home", { replace: true });
   };
+
+  useEffect(() => {
+    if (!window.history.state || window.history.state.page !== "home") {
+      window.history.replaceState({ page: "home" }, "", "#home");
+    }
+    historyRef.current = "home";
+    const handlePopState = (event) => {
+      const target = event.state?.page || "home";
+      isHandlingPopRef.current = true;
+      setNavHistory((prev) => {
+        if (prev.length <= 1) return ["home"];
+        return prev.slice(0, -1);
+      });
+      setCurrentPage(target);
+      window.requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  useEffect(() => {
+    if (isHandlingPopRef.current) {
+      isHandlingPopRef.current = false;
+      historyRef.current = currentPage;
+      historyActionRef.current = "push";
+      return;
+    }
+    const state = { page: currentPage };
+    if (historyActionRef.current === "replace") {
+      window.history.replaceState(state, "", `#${currentPage}`);
+    } else if (historyRef.current !== currentPage) {
+      window.history.pushState(state, "", `#${currentPage}`);
+    }
+    historyRef.current = currentPage;
+    historyActionRef.current = "push";
+  }, [currentPage]);
+
   const renderPage = () => {
     switch (currentPage) {
       case "home":
@@ -60,19 +126,30 @@ function App() {
         return <HomePage onNavigate={handleNavigate} />;
     }
   };
-  return <div className="min-h-screen bg-background">
+
+  const canGoBack = navHistory.length > 1;
+  const showBackControls = currentPage !== "home";
+
+  return (
+    <div className="min-h-screen bg-background">
       <Header
-    currentPage={currentPage}
-    isLoggedIn={Boolean(user)}
-    onNavigate={handleNavigate}
-    onLogout={handleLogout}
-    onToggleChat={() => setIsChatOpen(true)}
-  />
+        currentPage={currentPage}
+        isLoggedIn={Boolean(user)}
+        onNavigate={handleNavigate}
+        onLogout={handleLogout}
+        onToggleChat={() => setIsChatOpen(true)}
+      />
+      {showBackControls && (
+        <BackButton
+          onBack={canGoBack ? handleBack : undefined}
+          onHome={() => handleNavigate("home", { replace: !canGoBack })}
+        />
+      )}
       <main>{renderPage()}</main>
       <Footer onNavigate={handleNavigate} onToggleChat={() => setIsChatOpen((prev) => !prev)} />
       <SupportWidget open={isChatOpen} onToggle={setIsChatOpen} />
-    </div>;
+    </div>
+  );
 }
-export {
-  App as default
-};
+
+export { App as default };

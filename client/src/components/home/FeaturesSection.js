@@ -3,23 +3,23 @@ import { Card } from "../ui/card";
 const FEATURES = [
   {
     icon: <Calendar className="h-8 w-8" />,
-    title: "\u0110\u1EB7t l\u1ECBch d\u1EC5 d\xE0ng",
-    description: "\u0110\u1EB7t l\u1ECBch kh\xE1m b\u1EC7nh online nhanh ch\xF3ng, ti\u1EC7n l\u1EE3i ch\u1EC9 v\u1EDBi v\xE0i thao t\xE1c \u0111\u01A1n gi\u1EA3n"
+    title: "Đặt lịch dễ dàng",
+    description: "Đặt lịch khám bệnh online nhanh chóng, tiện lợi chỉ với vài thao tác đơn giản"
   },
   {
     icon: <Users className="h-8 w-8" />,
-    title: "\u0110\u1ED9i ng\u0169 chuy\xEAn m\xF4n",
-    description: "B\xE1c s\u0129 gi\xE0u kinh nghi\u1EC7m, t\u1EADn t\xE2m v\u1EDBi ngh\u1EC1, lu\xF4n \u0111\u1EB7t l\u1EE3i \xEDch b\u1EC7nh nh\xE2n l\xEAn h\xE0ng \u0111\u1EA7u"
+    title: "Đội ngũ chuyên môn",
+    description: "Bác sĩ giàu kinh nghiệm, tận tâm với nghề, luôn đặt lợi ích bệnh nhân lên hàng đầu"
   },
   {
     icon: <Heart className="h-8 w-8" />,
-    title: "Ch\u0103m s\xF3c to\xE0n di\u1EC7n",
-    description: "Theo d\xF5i s\u1EE9c kh\u1ECFe li\xEAn t\u1EE5c, t\u01B0 v\u1EA5n \u0111i\u1EC1u tr\u1ECB v\xE0 ch\u0103m s\xF3c sau kh\xE1m chu \u0111\xE1o"
+    title: "Chăm sóc toàn diện",
+    description: "Theo dõi sức khỏe liên tục, tư vấn điều trị và chăm sóc sau khám chu đáo"
   },
   {
     icon: <Shield className="h-8 w-8" />,
-    title: "An to\xE0n & B\u1EA3o m\u1EADt",
-    description: "Th\xF4ng tin s\u1EE9c kh\u1ECFe \u0111\u01B0\u1EE3c b\u1EA3o m\u1EADt tuy\u1EC7t \u0111\u1ED1i theo ti\xEAu chu\u1EA9n qu\u1ED1c t\u1EBF"
+    title: "An toàn & Bảo mật",
+    description: "Thông tin sức khỏe được bảo mật tuyệt đối theo tiêu chuẩn quốc tế"
   }
 ];
 function FeaturesSection() {

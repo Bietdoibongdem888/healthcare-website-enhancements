@@ -2,7 +2,7 @@ import { Card } from "./ui/card";
 import { useAuth } from "../context/AuthContext";
 function ProfilePage({ onNavigate }) {
   const { user } = useAuth();
-  const fullName = [user?.first_name, user?.last_name].filter(Boolean).join(" ") || "Ng\u01B0\u1EDDi d\xF9ng";
+  const fullName = [user?.first_name, user?.last_name].filter(Boolean).join(" ") || "Người dùng";
   return <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
         <div className="mb-8">

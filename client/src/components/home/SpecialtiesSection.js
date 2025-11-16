@@ -1,14 +1,14 @@
 import { Stethoscope, Activity, Heart, Award, CheckCircle, Star, Shield } from "lucide-react";
 import { Card } from "../ui/card";
 const SPECIALTIES_WITH_ICONS = [
-  { name: "N\u1ED9i Khoa", icon: <Stethoscope className="h-6 w-6" /> },
-  { name: "Ngo\u1EA1i Khoa", icon: <Activity className="h-6 w-6" /> },
-  { name: "S\u1EA3n - Nhi", icon: <Heart className="h-6 w-6" /> },
-  { name: "C\u1EADn l\xE2m s\xE0ng \u2013 h\u1ED7 tr\u1EE3", icon: <Award className="h-6 w-6" /> },
-  { name: "C\u01A1 x\u01B0\u01A1ng kh\u1EDBp", icon: <CheckCircle className="h-6 w-6" /> },
-  { name: "Y h\u1ECDc c\u1ED5 truy\u1EC1n", icon: <Star className="h-6 w-6" /> },
-  { name: "Dinh d\u01B0\u1EE1ng", icon: <Heart className="h-6 w-6" /> },
-  { name: "T\xE2m th\u1EA7n", icon: <Shield className="h-6 w-6" /> }
+  { name: "Nội Khoa", icon: <Stethoscope className="h-6 w-6" /> },
+  { name: "Ngoại Khoa", icon: <Activity className="h-6 w-6" /> },
+  { name: "Sản - Nhi", icon: <Heart className="h-6 w-6" /> },
+  { name: "Cận lâm sàng – hỗ trợ", icon: <Award className="h-6 w-6" /> },
+  { name: "Cơ xương khớp", icon: <CheckCircle className="h-6 w-6" /> },
+  { name: "Y học cổ truyền", icon: <Star className="h-6 w-6" /> },
+  { name: "Dinh dưỡng", icon: <Heart className="h-6 w-6" /> },
+  { name: "Tâm thần", icon: <Shield className="h-6 w-6" /> }
 ];
 function SpecialtiesSection({ onNavigate }) {
   return <section className="py-20 px-4">

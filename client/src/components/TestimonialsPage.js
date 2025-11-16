@@ -11,55 +11,55 @@ import {
   DialogTrigger
 } from "./ui/dialog";
 import { Star, Quote, HeartPulse } from "lucide-react";
-const CATEGORIES = ["T\u1EA5t c\u1EA3", "Tim m\u1EA1ch", "Ung b\u01B0\u1EDBu", "S\u1EA3n ph\u1EE5 khoa", "Nhi"];
+const CATEGORIES = ["Tất cả", "Tim mạch", "Ung bướu", "Sản phụ khoa", "Nhi"];
 const STORIES = [
   {
     id: 1,
-    name: "Ch\xFA Quang - 62 tu\u1ED5i",
-    treatment: "Thay van tim \xEDt x\xE2m l\u1EA5n",
-    department: "Tim m\u1EA1ch",
-    summary: "Sau 4 tu\u1EA7n ph\u1EE5c h\u1ED3i, ch\xFA tr\u1EDF l\u1EA1i \u0111i b\u1ED9 5km v\xE0 ki\u1EC3m so\xE1t huy\u1EBFt \xE1p \u1ED5n \u0111\u1ECBnh.",
-    detail: "Nh\u1EDD ph\xF2ng m\u1ED5 hybrid v\xE0 AI d\u1EF1 b\xE1o bi\u1EBFn ch\u1EE9ng, ca thay van ch\u1EC9 k\xE9o d\xE0i 95 ph\xFAt. Ch\xFA \u0111\u01B0\u1EE3c g\u1EAFn thi\u1EBFt b\u1ECB ghi nh\u1EADn nh\u1ECBp tim li\xEAn t\u1EE5c v\xE0 \u0111\u1ED9i ng\u0169 theo d\xF5i t\u1EEB xa 24/7.",
+    name: "Chú Quang - 62 tuổi",
+    treatment: "Thay van tim ít xâm lấn",
+    department: "Tim mạch",
+    summary: "Sau 4 tuần phục hồi, chú trở lại đi bộ 5km và kiểm soát huyết áp ổn định.",
+    detail: "Nhờ phòng mổ hybrid và AI dự báo biến chứng, ca thay van chỉ kéo dài 95 phút. Chú được gắn thiết bị ghi nhận nhịp tim liên tục và đội ngũ theo dõi từ xa 24/7.",
     rating: 4.9,
     metrics: [
-      { label: "Th\u1EDDi gian n\u1EB1m vi\u1EC7n", value: "3 ng\xE0y" },
-      { label: "T\xE1i kh\xE1m", value: "Sau 14 ng\xE0y" },
-      { label: "Ch\u1EA5t l\u01B0\u1EE3ng s\u1ED1ng", value: "+35%" }
+      { label: "Thời gian nằm viện", value: "3 ngày" },
+      { label: "Tái khám", value: "Sau 14 ngày" },
+      { label: "Chất lượng sống", value: "+35%" }
     ]
   },
   {
     id: 2,
-    name: "Gia \u0111\xECnh ch\u1ECB H\u1ED3ng",
-    treatment: "\u0110i\u1EC1u tr\u1ECB ung th\u01B0 v\xFA giai \u0111o\u1EA1n s\u1EDBm",
-    department: "Ung b\u01B0\u1EDBu",
-    summary: "Ph\xE1c \u0111\u1ED3 tailor-made gi\xFAp gi\u1EA3m 60% t\xE1c d\u1EE5ng ph\u1EE5, t\xF3c v\u1EABn gi\u1EEF 70%.",
-    detail: "K\u1EBFt h\u1EE3p AI \u0111\u1ECDc MRI v\xE0 h\u1ED9i ch\u1EA9n \u0111a chuy\xEAn khoa, ph\u1EABu thu\u1EADt b\u1EA3o t\u1ED3n \u0111\u01B0\u1EE3c th\u1EF1c hi\u1EC7n c\xF9ng robot h\u1ED7 tr\u1EE3. Sau m\u1ED5, ch\u01B0\u01A1ng tr\xECnh t\xE2m l\xFD tr\u1ECB li\u1EC7u v\xE0 dinh d\u01B0\u1EE1ng \u0111\u1ED3ng h\xE0nh li\xEAn t\u1EE5c.",
+    name: "Gia đình chị Hồng",
+    treatment: "Điều trị ung thư vú giai đoạn sớm",
+    department: "Ung bướu",
+    summary: "Phác đồ tailor-made giúp giảm 60% tác dụng phụ, tóc vẫn giữ 70%.",
+    detail: "Kết hợp AI đọc MRI và hội chẩn đa chuyên khoa, phẫu thuật bảo tồn được thực hiện cùng robot hỗ trợ. Sau mổ, chương trình tâm lý trị liệu và dinh dưỡng đồng hành liên tục.",
     rating: 5,
     metrics: [
-      { label: "Th\u1EDDi gian \u0111i\u1EC1u tr\u1ECB", value: "8 tu\u1EA7n" },
-      { label: "T\xE1c d\u1EE5ng ph\u1EE5", value: "-60%" },
-      { label: "M\u1EE9c \u0111\u1ED9 h\xE0i l\xF2ng", value: "98%" }
+      { label: "Thời gian điều trị", value: "8 tuần" },
+      { label: "Tác dụng phụ", value: "-60%" },
+      { label: "Mức độ hài lòng", value: "98%" }
     ]
   },
   {
     id: 3,
-    name: "B\xE9 Minh 6 tu\u1ED5i",
-    treatment: "\u0110i\u1EC1u tr\u1ECB hen ph\u1EBF qu\u1EA3n",
+    name: "Bé Minh 6 tuổi",
+    treatment: "Điều trị hen phế quản",
     department: "Nhi",
-    summary: "S\u1ED1 c\u01A1n hen gi\u1EA3m t\u1EEB 5 c\xF2n 1 l\u1EA7n/th\xE1ng nh\u1EDD ch\u01B0\u01A1ng tr\xECnh qu\u1EA3n tr\u1ECB k\xEDch ho\u1EA1t.",
-    detail: "\u1EE8ng d\u1EE5ng HealthCare+ Kids nh\u1EAFc thu\u1ED1c, \u0111o ph\u1ED5i t\u1EA1i nh\xE0 v\xE0 g\u1EEDi c\u1EA3nh b\xE1o khi ch\u1EC9 s\u1ED1 l\u1EC7ch chu\u1EA9n. Gia \u0111\xECnh nh\u1EADn t\u01B0 v\u1EA5n dinh d\u01B0\u1EE1ng, b\xE0i t\u1EADp h\xEDt th\u1EDF qua video call h\xE0ng tu\u1EA7n.",
+    summary: "Số cơn hen giảm từ 5 còn 1 lần/tháng nhờ chương trình quản trị kích hoạt.",
+    detail: "Ứng dụng HealthCare+ Kids nhắc thuốc, đo phổi tại nhà và gửi cảnh báo khi chỉ số lệch chuẩn. Gia đình nhận tư vấn dinh dưỡng, bài tập hít thở qua video call hàng tuần.",
     rating: 4.8,
     metrics: [
-      { label: "C\u01A1n hen/th\xE1ng", value: "-80%" },
-      { label: "T\xE1i c\u1EA5p c\u1EE9u", value: "0" },
-      { label: "Tu\xE2n th\u1EE7 thu\u1ED1c", value: "95%" }
+      { label: "Cơn hen/tháng", value: "-80%" },
+      { label: "Tái cấp cứu", value: "0" },
+      { label: "Tuân thủ thuốc", value: "95%" }
     ]
   }
 ];
 function TestimonialsPage({ onNavigate }) {
-  const [filter, setFilter] = useState("T\u1EA5t c\u1EA3");
+  const [filter, setFilter] = useState("Tất cả");
   const filteredStories = useMemo(() => {
-    if (filter === "T\u1EA5t c\u1EA3") return STORIES;
+    if (filter === "Tất cả") return STORIES;
     return STORIES.filter((story) => story.department === filter);
   }, [filter]);
   return <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 bg-slate-950/60">

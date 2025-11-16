@@ -45,7 +45,7 @@ function BookingSuccess({ onNavigate }) {
   const appointmentDate = new Date(details.scheduledAt);
   const statusTheme = STATUS_THEME[details.status] || STATUS_THEME.pending;
   const handleDownload = () => {
-    message.info("Phi\u1EBFu x\xE1c nh\u1EADn s\u1EBD s\u1EDBm kh\u1EA3 d\u1EE5ng \u1EDF b\u1EA3n ph\xE1t h\xE0nh k\u1EBF ti\u1EBFp.");
+    message.info("Phiếu xác nhận sẽ sớm khả dụng ở bản phát hành kế tiếp.");
   };
   return <div className="min-h-screen bg-muted/30 py-10 px-4">
       <div className="max-w-4xl mx-auto space-y-8">
@@ -66,10 +66,10 @@ function BookingSuccess({ onNavigate }) {
               <p className="text-sm uppercase text-muted-foreground mb-1">Trạng thái</p>
               <div className={`inline-flex items-center gap-2 rounded-full px-4 py-1 text-sm font-medium ${statusTheme}`}>
                 <span className="h-2 w-2 rounded-full bg-current" />
-                {details.status === "pending" && "Ch\u1EDD x\xE1c nh\u1EADn"}
-                {details.status === "confirmed" && "\u0110\xE3 x\xE1c nh\u1EADn"}
-                {details.status === "cancelled" && "\u0110\xE3 hu\u1EF7"}
-                {details.status === "completed" && "\u0110\xE3 ho\xE0n th\xE0nh"}
+                {details.status === "pending" && "Chờ xác nhận"}
+                {details.status === "confirmed" && "Đã xác nhận"}
+                {details.status === "cancelled" && "Đã huỷ"}
+                {details.status === "completed" && "Đã hoàn thành"}
               </div>
             </div>
             <div className="text-sm text-muted-foreground">
@@ -115,7 +115,7 @@ function BookingSuccess({ onNavigate }) {
               </div>
               <div className="rounded-xl border p-4 space-y-2">
                 <p className="text-sm text-muted-foreground">Ghi chú</p>
-                <p className="text-sm">{details.notes || "Kh\xF4ng c\xF3 ghi ch\xFA b\u1ED5 sung"}</p>
+                <p className="text-sm">{details.notes || "Không có ghi chú bổ sung"}</p>
               </div>
             </div>
           </div>

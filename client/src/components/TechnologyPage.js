@@ -6,35 +6,35 @@ import { DEPARTMENTS } from "../constants/departments";
 const TECHNOLOGIES = [
   {
     icon: Cpu,
-    title: "Ph\xF2ng m\u1ED5 Hybrid",
-    description: "K\u1EBFt h\u1EE3p MRI, CT v\xE0 robot h\u1ED7 tr\u1EE3, r\xFAt ng\u1EAFn 35% th\u1EDDi gian ph\u1EABu thu\u1EADt v\xE0 gi\u1EA3m ch\u1EA3y m\xE1u.",
-    detail: "Khai th\xE1c d\u1EEF li\u1EC7u th\u1EDDi gian th\u1EF1c \u0111\u1EC3 \u0111i\u1EC1u ch\u1EC9nh \u0111\u01B0\u1EDDng m\u1ED5 t\u1EEBng milimet."
+    title: "Phòng mổ Hybrid",
+    description: "Kết hợp MRI, CT và robot hỗ trợ, rút ngắn 35% thời gian phẫu thuật và giảm chảy máu.",
+    detail: "Khai thác dữ liệu thời gian thực để điều chỉnh đường mổ từng milimet."
   },
   {
     icon: Brain,
-    title: "AI \u0111\u1ECDc h\xECnh \u1EA3nh",
-    description: "AI h\u1ECDc s\xE2u ph\xE1t hi\u1EC7n b\u1EA5t th\u01B0\u1EDDng tim m\u1EA1ch, ung b\u01B0\u1EDBu v\u1EDBi \u0111\u1ED9 ch\xEDnh x\xE1c 96,4%.",
-    detail: "T\u1EF1 \u0111\u1ED9ng g\u1EEDi c\u1EA3nh b\xE1o cho b\xE1c s\u0129 v\xE0 g\u1EE3i \xFD ph\xE1c \u0111\u1ED3 ph\xF9 h\u1EE3p."
+    title: "AI đọc hình ảnh",
+    description: "AI học sâu phát hiện bất thường tim mạch, ung bướu với độ chính xác 96,4%.",
+    detail: "Tự động gửi cảnh báo cho bác sĩ và gợi ý phác đồ phù hợp."
   },
   {
     icon: ShieldCheck,
-    title: "Trung t\xE2m \u0111i\u1EC1u khi\u1EC3n ICU t\u1EEB xa",
-    description: "Theo d\xF5i sinh hi\u1EC7u li\xEAn t\u1EE5c, h\u1ED7 tr\u1EE3 quy\u1EBFt \u0111\u1ECBnh \u0111i\u1EC1u tr\u1ECB kh\u1EA9n c\u1EA5p trong 60 gi\xE2y.",
-    detail: "K\u1EBFt n\u1ED1i v\u1EDBi gia \u0111\xECnh b\u1EC7nh nh\xE2n qua \u1EE9ng d\u1EE5ng b\u1EA3o m\u1EADt."
+    title: "Trung tâm điều khiển ICU từ xa",
+    description: "Theo dõi sinh hiệu liên tục, hỗ trợ quyết định điều trị khẩn cấp trong 60 giây.",
+    detail: "Kết nối với gia đình bệnh nhân qua ứng dụng bảo mật."
   }
 ];
 const PIPELINE = [
   {
-    step: "1. T\u01B0 v\u1EA5n \u0111a chuy\xEAn khoa",
-    detail: "AI s\xE0ng l\u1ECDc h\u1ED3 s\u01A1, \u0111\u1EC1 xu\u1EA5t h\u1ED9i ch\u1EA9n v\u1EDBi b\xE1c s\u0129 \u0111\u1EA7u ng\xE0nh li\xEAn quan."
+    step: "1. Tư vấn đa chuyên khoa",
+    detail: "AI sàng lọc hồ sơ, đề xuất hội chẩn với bác sĩ đầu ngành liên quan."
   },
   {
-    step: "2. L\u1EADp k\u1EBF ho\u1EA1ch \u0111i\u1EC1u tr\u1ECB",
-    detail: "M\xF4 ph\u1ECFng 3D, d\u1EF1 \u0111o\xE1n bi\u1EBFn ch\u1EE9ng v\xE0 chu\u1EA9n h\xF3a checklist an to\xE0n."
+    step: "2. Lập kế hoạch điều trị",
+    detail: "Mô phỏng 3D, dự đoán biến chứng và chuẩn hóa checklist an toàn."
   },
   {
-    step: "3. Ch\u0103m s\xF3c h\u1EADu \u0111i\u1EC1u tr\u1ECB",
-    detail: "\u1EE8ng d\u1EE5ng HealthCare+ Care ghi nh\u1EADn d\u1EA5u hi\u1EC7u sinh t\u1ED3n, g\u1EEDi c\u1EA3nh b\xE1o t\xE1i kh\xE1m."
+    step: "3. Chăm sóc hậu điều trị",
+    detail: "Ứng dụng HealthCare+ Care ghi nhận dấu hiệu sinh tồn, gửi cảnh báo tái khám."
   }
 ];
 function TechnologyPage({ onNavigate }) {

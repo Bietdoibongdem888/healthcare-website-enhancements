@@ -6,35 +6,35 @@ import { ArrowRight, Stethoscope, HeartPulse, Activity, ShieldCheck } from "luci
 const TREATMENTS = [
   {
     id: "cardio",
-    title: "Tim m\u1EA1ch chuy\xEAn s\xE2u",
-    summary: "\u0110i\u1EC1u tr\u1ECB b\u1EC7nh m\u1EA1ch v\xE0nh, t\u0103ng huy\u1EBFt \xE1p, suy tim v\u1EDBi ph\xE1c \u0111\u1ED3 c\xE1 nh\xE2n h\xF3a.",
-    symptoms: ["\u0110au t\u1EE9c ng\u1EF1c", "Kh\xF3 th\u1EDF khi ho\u1EA1t \u0111\u1ED9ng", "Tim \u0111\u1EADp nhanh"],
-    services: ["Si\xEAu \xE2m tim 4D", "\u0110o \u0111i\u1EC7n tim Holter", "Can thi\u1EC7p \u0111\u1EB7t stent v\xE0nh"],
-    recovery: ["Theo d\xF5i t\u1EEB xa 24/7", "Hu\u1EA5n luy\u1EC7n ph\u1EE5c h\u1ED3i ch\u1EE9c n\u0103ng tim", "T\u01B0 v\u1EA5n dinh d\u01B0\u1EE1ng tim m\u1EA1ch"]
+    title: "Tim mạch chuyên sâu",
+    summary: "Điều trị bệnh mạch vành, tăng huyết áp, suy tim với phác đồ cá nhân hóa.",
+    symptoms: ["Đau tức ngực", "Khó thở khi hoạt động", "Tim đập nhanh"],
+    services: ["Siêu âm tim 4D", "Đo điện tim Holter", "Can thiệp đặt stent vành"],
+    recovery: ["Theo dõi từ xa 24/7", "Huấn luyện phục hồi chức năng tim", "Tư vấn dinh dưỡng tim mạch"]
   },
   {
     id: "neuro",
-    title: "Th\u1EA7n kinh & \u0110\u1ED9t qu\u1EF5",
-    summary: "Can thi\u1EC7p s\u1EDBm trong 4 gi\u1EDD \u0111\u1EA7u, ph\u1EE5c h\u1ED3i ch\u1EE9c n\u0103ng v\xE0 ph\xF2ng ng\u1EEBa t\xE1i ph\xE1t.",
-    symptoms: ["T\xEA li\u1EC7t n\u1EEDa ng\u01B0\u1EDDi", "N\xF3i kh\xF3", "\u0110au \u0111\u1EA7u d\u1EEF d\u1ED9i"],
-    services: ["CT/MRI n\xE3o", "Can thi\u1EC7p m\u1EA1ch n\xE3o", "\u0110i\u1EC7n n\xE3o \u0111\u1ED3"],
-    recovery: ["Ph\u1EE5c h\u1ED3i ng\xF4n ng\u1EEF", "V\u1EADt l\xFD tr\u1ECB li\u1EC7u chuy\xEAn s\xE2u", "Theo d\xF5i nguy c\u01A1 t\xE1i ph\xE1t"]
+    title: "Thần kinh & Đột quỵ",
+    summary: "Can thiệp sớm trong 4 giờ đầu, phục hồi chức năng và phòng ngừa tái phát.",
+    symptoms: ["Tê liệt nửa người", "Nói khó", "Đau đầu dữ dội"],
+    services: ["CT/MRI não", "Can thiệp mạch não", "Điện não đồ"],
+    recovery: ["Phục hồi ngôn ngữ", "Vật lý trị liệu chuyên sâu", "Theo dõi nguy cơ tái phát"]
   },
   {
     id: "obgyn",
-    title: "S\u1EA3n - Ph\u1EE5 khoa to\xE0n di\u1EC7n",
-    summary: "Ch\u0103m s\xF3c thai k\u1EF3 nguy c\u01A1 cao, \u0111i\u1EC1u tr\u1ECB hi\u1EBFm mu\u1ED9n v\xE0 ph\u1EABu thu\u1EADt n\u1ED9i soi.",
-    symptoms: ["Mang thai nguy c\u01A1", "R\u1ED1i lo\u1EA1n n\u1ED9i ti\u1EBFt", "Hi\u1EBFm mu\u1ED9n"],
-    services: ["S\xE0ng l\u1ECDc tr\u01B0\u1EDBc sinh NIPT", "IVF ph\u1ED1i h\u1EE3p AI", "N\u1ED9i soi t\u1EED cung/ bu\u1ED3ng tr\u1EE9ng"],
-    recovery: ["Theo d\xF5i h\u1EADu s\u1EA3n", "T\u01B0 v\u1EA5n dinh d\u01B0\u1EE1ng m\u1EB9 v\xE0 b\xE9", "Ch\u01B0\u01A1ng tr\xECnh ch\u0103m s\xF3c sau sinh"]
+    title: "Sản - Phụ khoa toàn diện",
+    summary: "Chăm sóc thai kỳ nguy cơ cao, điều trị hiếm muộn và phẫu thuật nội soi.",
+    symptoms: ["Mang thai nguy cơ", "Rối loạn nội tiết", "Hiếm muộn"],
+    services: ["Sàng lọc trước sinh NIPT", "IVF phối hợp AI", "Nội soi tử cung/ buồng trứng"],
+    recovery: ["Theo dõi hậu sản", "Tư vấn dinh dưỡng mẹ và bé", "Chương trình chăm sóc sau sinh"]
   },
   {
     id: "ortho",
-    title: "Ch\u1EA5n th\u01B0\u01A1ng ch\u1EC9nh h\xECnh",
-    summary: "Thay kh\u1EDBp \xEDt x\xE2m l\u1EA5n, \u0111i\u1EC1u tr\u1ECB ch\u1EA5n th\u01B0\u01A1ng th\u1EC3 thao v\xE0 ph\u1EE5c h\u1ED3i v\u1EADn \u0111\u1ED9ng.",
-    symptoms: ["\u0110au kh\u1EDBp k\xE9o d\xE0i", "Ch\u1EA5n th\u01B0\u01A1ng th\u1EC3 thao", "Tho\xE1i h\xF3a kh\u1EDBp"],
-    services: ["N\u1ED9i soi t\xE1i t\u1EA1o d\xE2y ch\u1EB1ng", "Thay kh\u1EDBp th\u1EBF h\u1EC7 m\u1EDBi", "Ph\xF2ng lab ph\xE2n t\xEDch d\xE1ng ch\u1EA1y"],
-    recovery: ["Ch\u01B0\u01A1ng tr\xECnh ph\u1EE5c h\u1ED3i 12 tu\u1EA7n", "\u1EE8ng d\u1EE5ng theo d\xF5i b\xE0i t\u1EADp", "Hu\u1EA5n luy\u1EC7n vi\xEAn c\xE1 nh\xE2n"]
+    title: "Chấn thương chỉnh hình",
+    summary: "Thay khớp ít xâm lấn, điều trị chấn thương thể thao và phục hồi vận động.",
+    symptoms: ["Đau khớp kéo dài", "Chấn thương thể thao", "Thoái hóa khớp"],
+    services: ["Nội soi tái tạo dây chằng", "Thay khớp thế hệ mới", "Phòng lab phân tích dáng chạy"],
+    recovery: ["Chương trình phục hồi 12 tuần", "Ứng dụng theo dõi bài tập", "Huấn luyện viên cá nhân"]
   }
 ];
 function TreatmentsPage({ onNavigate }) {

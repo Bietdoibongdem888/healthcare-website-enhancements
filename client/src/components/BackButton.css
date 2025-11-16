@@ -1,0 +1,65 @@
+.back-button-wrapper {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0));
+  backdrop-filter: blur(6px);
+}
+
+.back-button,
+.home-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1.25rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.back-button {
+  border: 1px solid rgba(15, 118, 110, 0.3);
+  background: #f0fdfa;
+  color: #0f766e;
+}
+
+.back-button:hover {
+  background: #0f766e;
+  color: #ffffff;
+  box-shadow: 0 10px 25px rgba(15, 118, 110, 0.25);
+}
+
+.home-button {
+  border: 1px solid rgba(15, 76, 129, 0.3);
+  background: #eff6ff;
+  color: #0f4c81;
+}
+
+.home-button:hover {
+  background: #0f4c81;
+  color: #ffffff;
+  box-shadow: 0 10px 25px rgba(15, 76, 129, 0.25);
+}
+
+.back-button svg,
+.home-button svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+@media (max-width: 640px) {
+  .back-button-wrapper {
+    padding: 0.65rem 1rem;
+  }
+
+  .back-button,
+  .home-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
