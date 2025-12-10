@@ -1,6 +1,7 @@
 const Joi = require('joi');
 const Support = require('../models/support.model');
 const Department = require('../models/department.model');
+const OpenAI = require('openai');
 
 const createSchema = Joi.object({
   channel: Joi.string().valid('hotline', 'ai').default('ai'),

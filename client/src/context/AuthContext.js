@@ -36,8 +36,10 @@ const AuthProvider = ({ children }) => {
         method: "POST",
         body: JSON.stringify({ email, password })
       });
-      if (data?.access && data?.refresh) {
-        saveTokens({ access: data.access, refresh: data.refresh });
+      const access = data?.access || data?.token?.access;
+      const refresh = data?.refresh || data?.token?.refresh;
+      if (access && refresh) {
+        saveTokens({ access, refresh });
         setUser(data.user || null);
         return true;
       }
@@ -52,8 +54,10 @@ const AuthProvider = ({ children }) => {
         method: "POST",
         body: JSON.stringify(payload)
       });
-      if (data?.access && data?.refresh) {
-        saveTokens({ access: data.access, refresh: data.refresh });
+      const access = data?.access || data?.token?.access;
+      const refresh = data?.refresh || data?.token?.refresh;
+      if (access && refresh) {
+        saveTokens({ access, refresh });
         setUser(data.user || null);
         return true;
       }

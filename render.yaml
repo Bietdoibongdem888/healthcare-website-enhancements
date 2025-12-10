@@ -1,0 +1,28 @@
+﻿services:
+  - type: web
+    name: healthcare-backend
+    rootDir: server
+    env: node
+    plan: free
+    buildCommand: "npm install"
+    startCommand: "npm run start"
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: DB_HOST
+        value: your-db-host
+      - key: DB_PORT
+        value: 3306
+      - key: DB_USER
+        value: your-db-user
+      - key: DB_PASSWORD
+        value: your-db-password
+      - key: DB_NAME
+        value: healthcare_db
+      - key: JWT_SECRET
+        value: change-me
+      - key: CORS_ORIGIN
+        value: https://your-frontend.vercel.app
+      - key: OPENAI_API_KEY
+        value: your-openai-key

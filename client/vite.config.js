@@ -85,7 +85,8 @@ module.exports = defineConfig({
     outDir: "build",
   },
   server: {
-    port: 3000,
+    // run dev server on 5173 to avoid clashing with backend 3000
+    port: 5173,
     open: true,
   },
 });

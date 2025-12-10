@@ -10,7 +10,7 @@
   "redis": { "url": "redis://127.0.0.1:6379" },
   "database": {
     "dialect": "mysql",
-    "host": "localhost",
+    "host": "127.0.0.1",
     "port": 3307,
     "name": "healthcare_db",
     "user": "root",
